@@ -7,8 +7,11 @@ function oneAntWasm(): Plugin {
   return {
     name: "one-ant-wasm",
     transform(code, id) {
-      if (!/@ant-lang[/\\]wasm[/\\]index\.js$|packages[/\\]wasm[/\\]index\.js$/.test(id)) return;
-      return code.replace('new URL("./ant.wasm", import.meta.url)', "undefined");
+      if (!/@ant-lang[/\\]wasm[/\\]index\.js$/.test(id)) return;
+      const url = 'new URL("./ant.wasm", import.meta.url)';
+      // A new @ant-lang/wasm that words it otherwise must fail the build, not copy ant.wasm again.
+      if (!code.includes(url)) this.error(`one-ant-wasm: ${url} is not in ${id}; update the plugin`);
+      return code.replace(url, "undefined");
     },
   };
 }

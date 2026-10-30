@@ -10,7 +10,8 @@ export type FromWorker =
   | { type: "ready" }
   | { type: "output"; stream: "stdout" | "stderr"; text: string }
   | { type: "done"; exitCode: number; ms: number }
-  | { type: "failed"; message: string };
+  | { type: "failed"; message: string }
+  | { type: "unavailable"; message: string };
 
 let ant: Promise<Ant> | undefined;
 const post = (m: FromWorker) => self.postMessage(m);
@@ -20,7 +21,7 @@ self.onmessage = async ({ data }: MessageEvent<ToWorker>) => {
     ant = loadAnt({ wasm: data.module });
     ant.then(
       () => post({ type: "ready" }),
-      (err) => post({ type: "failed", message: String(err?.message ?? err) }),
+      (err) => post({ type: "unavailable", message: String(err?.message ?? err) }),
     );
     return;
   }

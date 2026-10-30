@@ -8,12 +8,18 @@ import { decode, encode, validPath, type Snapshot } from "./share";
 
 type EditorModule = typeof import("./editor");
 type Status = "loading" | "ready" | "running" | "failed";
+type Part = { text: string } | { text: string; path: string; line: number; column: number };
 interface Chunk {
   stream: "stdout" | "stderr" | "note";
   text: string;
+  parts: Part[]; // the text, with positions in the code as links
 }
 
 const storageKey = "ant-playground";
+// Output past the limit stops the run: a program printing forever would otherwise flood the page.
+const outputLimit = 1 << 20;
+// A chunk grows to this size, so linking positions on each append costs little.
+const chunkSize = 1 << 16;
 const mod = shallowRef<EditorModule>();
 const { isDark } = useData();
 
@@ -36,9 +42,19 @@ const rootEl = ref<HTMLElement>();
 let editor: Monaco.editor.IStandaloneCodeEditor | undefined;
 let server: AntLanguageServer | undefined;
 let runner: InstanceType<EditorModule["Runner"]> | undefined;
-let pristine = "";
+// pristine is the example as it was opened, so picking another replaces it without asking;
+// any other code, restored or shared, is asked about.
+let pristine: string | null = null;
+// fromHash says the code is a shared link not yet edited, which is not saved over the reader's own.
 let fromHash = false;
+let loaded = false; // the files are in the editor, so there is something to save
 let loading = false; // load is replacing the files, which is no edit
+let unmounted = false;
+let lspReady = false;
+let runnerReady = false;
+let pendingOutput: { stream: Chunk["stream"]; text: string }[] = [];
+let outputSize = 0;
+let flushFrame = 0;
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 const disposables: Monaco.IDisposable[] = [];
@@ -72,7 +88,8 @@ function load(s: Snapshot) {
   loading = true;
   stdin.value = s.stdin;
   nextTick(() => (loading = false));
-  pristine = JSON.stringify(snapshot());
+  pristine = null;
+  loaded = true;
   show("main.ant");
 }
 
@@ -84,16 +101,20 @@ function show(path: string) {
 }
 
 function changed() {
-  if (fromHash) {
-    // An edit makes the page the reader's own: a reload restores it from storage, not the link.
-    fromHash = false;
-    history.replaceState(null, "", location.pathname + location.search);
-  }
+  // An edit makes the page the reader's own: a reload restores it from storage, not the link.
+  own();
   clearTimeout(saveTimer);
   saveTimer = setTimeout(save, 300);
 }
 
+function own() {
+  if (!fromHash) return;
+  fromHash = false;
+  history.replaceState(null, "", location.pathname + location.search);
+}
+
 function save() {
+  if (!loaded || fromHash) return;
   try {
     localStorage.setItem(storageKey, JSON.stringify(snapshot()));
   } catch {
@@ -173,18 +194,15 @@ function pickExample(id: string) {
   exampleId.value = "";
   if (!example) return;
   if (JSON.stringify(snapshot()) !== pristine && !confirm(`Replace your code with “${example.title}”?`)) return;
+  own();
   openExample(example);
 }
 
 function openExample(example: Example) {
   load({ files: { ...example.files }, stdin: example.stdin });
-  chunks.value = [];
-  result.value = null;
+  pristine = JSON.stringify(snapshot());
+  clearOutput();
   panel.value = example.stdin ? "input" : "output";
-  if (fromHash) {
-    fromHash = false;
-    history.replaceState(null, "", location.pathname + location.search);
-  }
   save();
   editor?.focus();
 }
@@ -193,39 +211,75 @@ function openExample(example: Example) {
 
 function run() {
   if (!runner || status.value === "loading" || status.value === "failed") return;
-  if (running.value) runner.stop();
-  chunks.value = [];
-  result.value = null;
+  if (running.value) restart();
+  clearOutput();
   panel.value = "output";
   status.value = "running";
   runner.run(snapshot().files, stdin.value);
 }
 
-function stop() {
+function stop(message = "Stopped.") {
   if (!running.value || !runner) return;
-  runner.stop();
+  restart();
   status.value = "loading";
-  note("Stopped.");
+  note(message);
 }
 
-function append(stream: Chunk["stream"], text: string) {
-  const last = chunks.value[chunks.value.length - 1];
-  if (last?.stream === stream) last.text += text;
-  else chunks.value.push({ stream, text });
+// restart replaces the run worker, ending whatever it runs.
+function restart() {
+  runnerReady = false;
+  runner!.stop();
 }
 
+function clearOutput() {
+  cancelAnimationFrame(flushFrame);
+  flushFrame = 0;
+  pendingOutput = [];
+  outputSize = 0;
+  chunks.value = [];
+  result.value = null;
+}
+
+// output collects what the program writes and shows it once a frame, however often it writes.
+function output(stream: Chunk["stream"], text: string) {
+  if (outputSize >= outputLimit) return;
+  outputSize += text.length;
+  pendingOutput.push({ stream, text });
+  if (outputSize >= outputLimit) {
+    stop(`Stopped: the output passed ${outputLimit >> 20} MB.`);
+    return;
+  }
+  flushFrame ||= requestAnimationFrame(flushOutput);
+}
+
+function flushOutput() {
+  flushFrame = 0;
+  const pending = pendingOutput;
+  pendingOutput = [];
+  for (const { stream, text } of pending) {
+    const last = chunks.value[chunks.value.length - 1];
+    if (last?.stream === stream && last.text.length < chunkSize) {
+      last.text += text;
+      last.parts = segments(last.text);
+    } else {
+      chunks.value.push({ stream, text, parts: segments(text) });
+    }
+  }
+}
+
+// note adds the playground's own word to the output, past any limit.
 function note(text: string) {
-  append(
-    "note",
-    (chunks.value.length && !chunks.value[chunks.value.length - 1].text.endsWith("\n") ? "\n" : "") + text,
-  );
+  flushOutput();
+  const last = chunks.value[chunks.value.length - 1];
+  const line = (last && !last.text.endsWith("\n") ? "\n" : "") + text;
+  chunks.value.push({ stream: "note", text: line, parts: [{ text: line }] });
 }
 
 // The output links positions such as main.ant:3:5 to the editor.
 const positionPattern = /([A-Za-z0-9_\-/]+\.ant):(\d+):(\d+)/g;
 
-function segments(text: string): ({ text: string } | { text: string; path: string; line: number; column: number })[] {
-  const out: ({ text: string } | { text: string; path: string; line: number; column: number })[] = [];
+function segments(text: string): Part[] {
+  const out: Part[] = [];
   let last = 0;
   for (const m of text.matchAll(positionPattern)) {
     if (!paths.value.includes(m[1])) continue;
@@ -274,9 +328,23 @@ function onKey(e: KeyboardEvent) {
   if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
     e.preventDefault();
     run();
-  } else if (e.key === "Escape" && running.value) {
+  } else if (e.key === "Escape" && running.value && !editorEl.value?.contains(e.target as Node)) {
+    // In the editor, Escape closes completions and hovers; there the Stop button stops.
     stop();
   }
+}
+
+// A shared link opened in a tab already on the playground arrives as a new fragment.
+async function onHash() {
+  const hash = location.hash.match(/^#code=(.+)$/);
+  if (!hash || !loaded) return;
+  const shared = await decode(hash[1]);
+  if (!shared || unmounted) return;
+  clearTimeout(saveTimer);
+  save(); // the reader's own code, before the link replaces it on screen
+  fromHash = true;
+  load(shared);
+  clearOutput();
 }
 
 // ---- the divider
@@ -300,7 +368,10 @@ function drag(e: PointerEvent) {
 
 onMounted(async () => {
   window.addEventListener("keydown", onKey);
+  window.addEventListener("hashchange", onHash);
+  // Each await may end with the page gone; onBeforeUnmount has then cleaned up what existed.
   const m = await import("./editor");
+  if (unmounted) return;
   mod.value = m;
   const { monaco } = m;
 
@@ -344,42 +415,53 @@ onMounted(async () => {
 
   const hash = location.hash.match(/^#code=(.+)$/);
   const shared = hash ? await decode(hash[1]) : null;
+  if (unmounted) return;
   if (shared) {
     fromHash = true;
     load(shared);
   } else {
-    load(restore() ?? { files: { ...defaultExample.files }, stdin: defaultExample.stdin });
+    const saved = restore();
+    load(saved ?? { files: { ...defaultExample.files }, stdin: defaultExample.stdin });
+    if (!saved) pristine = JSON.stringify(snapshot());
   }
   editor.focus();
 
+  let module: WebAssembly.Module;
   try {
-    const module = await m.compileAnt();
-    server = m.startLanguageServer(module, (line) => console.debug("ant lsp:", line));
-    let pending = 2;
-    const ready = () => {
-      if (--pending === 0 && status.value === "loading") status.value = "ready";
-    };
-    server.ready.then(ready, (err) => fail(err));
-    runner = new m.Runner(module, {
-      ready() {
-        if (pending > 0) ready();
-        else if (status.value === "loading") status.value = "ready";
-      },
-      output: append,
-      done(exitCode, ms) {
-        status.value = "ready";
-        result.value = { exitCode, ms };
-      },
-      failed(message) {
-        status.value = "ready";
-        note(message);
-        result.value = { exitCode: 1, ms: 0 };
-      },
-    });
+    module = await m.compileAnt();
   } catch (err) {
-    fail(err);
+    return fail(err);
   }
+  if (unmounted) return;
+  server = m.startLanguageServer(module, (line) => console.debug("ant lsp:", line));
+  server.ready.then(() => {
+    lspReady = true;
+    becomeReady();
+  }, fail);
+  runner = new m.Runner(module, {
+    ready() {
+      runnerReady = true;
+      becomeReady();
+    },
+    output,
+    done(exitCode, ms) {
+      flushOutput();
+      status.value = "ready";
+      result.value = { exitCode, ms };
+    },
+    failed(message) {
+      status.value = "ready";
+      note(message);
+      result.value = { exitCode: 1, ms: 0 };
+    },
+    unavailable: fail,
+  });
 });
+
+// becomeReady leaves loading once both workers are up, at the start and after each Stop.
+function becomeReady() {
+  if (lspReady && runnerReady && status.value === "loading") status.value = "ready";
+}
 
 function fail(err: unknown) {
   status.value = "failed";
@@ -390,8 +472,11 @@ watch(isDark, (dark) => mod.value?.monaco.editor.setTheme(dark ? "ant-dark" : "a
 watch(stdin, () => loading || changed());
 
 onBeforeUnmount(() => {
+  unmounted = true;
   window.removeEventListener("keydown", onKey);
+  window.removeEventListener("hashchange", onHash);
   clearTimeout(saveTimer);
+  cancelAnimationFrame(flushFrame);
   save();
   for (const d of disposables.splice(0)) d.dispose();
   server?.dispose();
@@ -477,7 +562,7 @@ onBeforeUnmount(() => {
         </span>
         <button type="button" class="button" :title="`Format (${mod1}+S)`" @click="format">Format</button>
         <button type="button" class="button" title="Copy a link to this code" @click="share">Share</button>
-        <button v-if="running" type="button" class="button run stop" title="Stop (Esc)" @click="stop">■ Stop</button>
+        <button v-if="running" type="button" class="button run stop" title="Stop (Esc)" @click="stop()">■ Stop</button>
         <button
           v-else
           type="button"
@@ -535,7 +620,7 @@ onBeforeUnmount(() => {
           </div>
           <pre
             v-else
-          ><template v-for="(c, i) in chunks" :key="i"><span :class="c.stream"><template v-for="(s, j) in segments(c.text)" :key="j"><a
+          ><template v-for="(c, i) in chunks" :key="i"><span :class="c.stream"><template v-for="(s, j) in c.parts" :key="j"><a
             v-if="'path' in s"
             href="#"
             @click.prevent="reveal(s.path, s.line, s.column)"

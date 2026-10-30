@@ -40,7 +40,10 @@ export interface RunHandlers {
   ready(): void;
   output(stream: "stdout" | "stderr", text: string): void;
   done(exitCode: number, ms: number): void;
+  /** failed reports a run that could not finish. */
   failed(message: string): void;
+  /** unavailable reports that ant.wasm did not start in the worker, so nothing can run. */
+  unavailable(message: string): void;
 }
 
 /** Runner runs programs in a worker, and stops one by replacing the worker. */
@@ -66,6 +69,8 @@ export class Runner {
           return this.handlers.done(data.exitCode, data.ms);
         case "failed":
           return this.handlers.failed(data.message);
+        case "unavailable":
+          return this.handlers.unavailable(data.message);
       }
     };
     this.post({ type: "init", module: this.module });
