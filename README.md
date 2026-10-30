@@ -5,11 +5,7 @@ The website of the [Ant](https://github.com/ant-src/ant) language, built with
 [@ant-lang/monaco](https://github.com/ant-src/ant-web/tree/master/packages/monaco) and
 [@ant-lang/wasm](https://github.com/ant-src/ant-web/tree/master/packages/wasm).
 
-The packages come from a checkout of [ant-web](https://github.com/ant-src/ant-web) next to this
-repository, built first:
-
 ```sh
-(cd ../ant-web && npm install && npm run build)
 npm install
 npm run dev         # http://localhost:5173
 npm run build       # .vitepress/dist
