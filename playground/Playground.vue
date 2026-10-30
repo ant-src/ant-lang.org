@@ -562,16 +562,17 @@ onBeforeUnmount(() => {
         </span>
         <button type="button" class="button" :title="`Format (${mod1}+S)`" @click="format">Format</button>
         <button type="button" class="button" title="Copy a link to this code" @click="share">Share</button>
-        <button v-if="running" type="button" class="button run stop" title="Stop (Esc)" @click="stop()">■ Stop</button>
+        <!-- One button that keeps its size, so the toolbar does not move as a run starts and ends. -->
         <button
-          v-else
           type="button"
           class="button run"
-          :disabled="status !== 'ready'"
-          :title="`Run (${mod1}+Enter)`"
-          @click="run"
+          :class="{ stop: running }"
+          :disabled="!running && status !== 'ready'"
+          :title="running ? 'Stop (Esc)' : `Run (${mod1}+Enter)`"
+          @click="running ? stop() : run()"
         >
-          ▶ Run
+          <span class="icon" aria-hidden="true">{{ running ? "■" : "▶" }}</span
+          >{{ running ? "Stop" : "Run" }}
         </button>
       </div>
     </header>
@@ -765,6 +766,8 @@ onBeforeUnmount(() => {
 .state {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
+  min-width: 96px; /* fits "Loading Ant…", so the buttons stay put as the state changes */
   gap: 6px;
   margin-right: 4px;
   font-size: 12px;
@@ -814,10 +817,21 @@ onBeforeUnmount(() => {
 }
 
 .button.run {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 84px;
   border-color: transparent;
   color: #fff;
   background: linear-gradient(120deg, var(--ant-violet), var(--ant-pink));
   padding: 5px 16px;
+}
+
+.button.run .icon {
+  width: 10px;
+  font-size: 11px;
+  text-align: center;
 }
 
 .button.run:hover {
