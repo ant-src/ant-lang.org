@@ -10,5 +10,5 @@ export func area(s: Shape): float64 {
 // describe names a shape and its area, rounded to two places.
 export func describe(s: Shape): string {
   var name = if s is Circle { "circle" } else { "rect" }
-  `${name}: ${Math.round(area(s) * 100.0) / 100.0}`
+  "${name}: ${Math.round(area(s) * 100.0) / 100.0}"
 }

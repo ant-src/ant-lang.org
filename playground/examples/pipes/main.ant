@@ -13,7 +13,7 @@ var people = [
 var seniors = people
   | Array.filter({ x.age >= 40 })
   | Array.sortBy({ x.name })
-  | Array.map({ `${x.name} (${x.age})` })
+  | Array.map({ "${x.name} (${x.age})" })
 
 println(seniors)
-println(`total age: ${Array.sum(Array.map(people, { x.age })) ?? 0}`)
+println("total age: ${Array.sum(Array.map(people, { x.age })) ?? 0}")

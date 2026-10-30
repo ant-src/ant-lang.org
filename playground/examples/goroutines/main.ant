@@ -27,7 +27,7 @@ var total = 0
 for _ in Iter.range(0, 4) {
   total += Channel.receive(counts) ?? 0
 }
-println(`primes below 20000: ${total}`)
+println("primes below 20000: ${total}")
 
 // Nobody sends on quiet, so the timer wins.
 var quiet: Channel[string] = Channel.new()

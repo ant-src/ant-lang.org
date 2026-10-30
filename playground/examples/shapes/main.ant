@@ -15,5 +15,5 @@ for s in shapes {
 
 var largest = Array.sortBy(shapes, { -area(x) })[0]
 if largest is Circle {
-  println(`the largest is a circle of radius ${largest.radius}`)
+  println("the largest is a circle of radius ${largest.radius}")
 }

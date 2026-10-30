@@ -163,7 +163,7 @@ function commitName() {
   const text =
     n.mode === "rename"
       ? modelOf(n.from!)!.getValue()
-      : `// ${name} is imported as "./${name}".\n\nexport func greet(name: string): string { \`hello, \${name}\` }\n`;
+      : `// ${name} is imported as "./${name}".\n\nexport func greet(name: string): string { "hello, \${name}" }\n`;
   const model = monaco.editor.createModel(text, "ant", uriOf(name));
   disposables.push(model.onDidChangeContent(changed));
   if (n.mode === "rename") {

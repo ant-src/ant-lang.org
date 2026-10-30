@@ -1,7 +1,7 @@
 // Strings are Unicode text, counted in what a reader sees.
 
 var family = "👨‍👩‍👧"
-println(`${family} is ${len(String.graphemes(family))} character`)
+println("${family} is ${len(String.graphemes(family))} character")
 println(String.graphemes("🇨🇭🇩🇪"))
 println(String.toUpper("straße"))
 
@@ -11,4 +11,4 @@ println(Time.add(date, Time.duration(months: 1)))
 
 var zone = Result.unwrap(Time.zone("Europe/Stockholm"))
 var meeting = Time.toZoned(Time.plainDateTime(Time.plainDate(2026, 3, 29), Time.plainTime(hour: 2, minute: 30)), zone)
-println(`2:30 does not exist that night in Stockholm: ${meeting}`)
+println("2:30 does not exist that night in Stockholm: ${meeting}")

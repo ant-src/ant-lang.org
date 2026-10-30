@@ -4,5 +4,5 @@
 var names = ["world", "Ant", "🐜"]
 
 for name in names {
-  println(`Hello, ${name}!`)
+  println("Hello, ${name}!")
 }
