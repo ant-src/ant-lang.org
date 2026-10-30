@@ -1,0 +1,19 @@
+// Shape is a union of records, declared in shapes.ant.
+// `is` narrows it: inside the branch, s is a Circle.
+
+import "./shapes.ant" { area, describe, Circle, Rect, Shape }
+
+var shapes: Array[Shape] = [
+  Circle{ radius: 1.5 },
+  Rect{ width: 2.0, height: 3.0 },
+  Circle{ radius: 0.5 },
+]
+
+for s in shapes {
+  println(describe(s))
+}
+
+var largest = Array.sortBy(shapes, { -area(x) })[0]
+if largest is Circle {
+  println(`the largest is a circle of radius ${largest.radius}`)
+}

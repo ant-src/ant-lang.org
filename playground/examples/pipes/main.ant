@@ -1,0 +1,19 @@
+// A pipe passes the value on its left as the first argument on its right.
+// { x.age >= 40 } is a lambda; x is its parameter.
+
+type Person = { name: string, age: int }
+
+var people = [
+  Person{ name: "Ada", age: 36 },
+  Person{ name: "Linus", age: 28 },
+  Person{ name: "Grace", age: 45 },
+  Person{ name: "Alan", age: 41 },
+]
+
+var seniors = people
+  | Array.filter({ x.age >= 40 })
+  | Array.sortBy({ x.name })
+  | Array.map({ `${x.name} (${x.age})` })
+
+println(seniors)
+println(`total age: ${Array.sum(Array.map(people, { x.age })) ?? 0}`)

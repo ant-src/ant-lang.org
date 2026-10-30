@@ -1,0 +1,76 @@
+name: deploy
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: ant-lang.org
+          persist-credentials: false
+      # The playground uses @ant-lang/monaco and @ant-lang/wasm from ant-web, whose ant.wasm is
+      # built from the ant repository; both are checked out next to this one.
+      - uses: actions/checkout@v5
+        with:
+          repository: ant-src/ant-web
+          path: ant-web
+          persist-credentials: false
+      - uses: actions/checkout@v5
+        with:
+          repository: ant-src/ant
+          path: ant
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: ant/go.mod
+          cache: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: ant-web
+        working-directory: ant-web
+        run: |
+          npm ci
+          npm run build
+      - name: install
+        working-directory: ant-lang.org
+        run: npm ci
+      - name: check
+        working-directory: ant-lang.org
+        run: |
+          npm run fmt:check
+          npm run lint
+          npm run typecheck
+      - name: build
+        working-directory: ant-lang.org
+        run: npm run build
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: ant-lang.org/.vitepress/dist
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

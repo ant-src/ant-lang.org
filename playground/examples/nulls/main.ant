@@ -1,0 +1,21 @@
+// Nothing is left undefined: a value that may be missing has a type
+// with null in it, and the checker makes you handle it.
+
+type Address = { city: string }
+type User = { name: string, address: Address | null }
+
+var users = Map{
+  ada: User{ name: "Ada", address: Address{ city: "London" } },
+  alan: User{ name: "Alan", address: null },
+}
+
+func city(id: string): string {
+  // ?. stops at null, and ?? gives a fallback.
+  users[id]?.address?.city ?? "unknown"
+}
+
+println(city("ada"))
+println(city("alan"))
+println(city("grace"))
+
+// Try removing the ?? "unknown" above: the checker flags it.

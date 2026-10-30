@@ -1,0 +1,31 @@
+// Errors are values. A function that can fail returns a Result,
+// and try returns early with its error.
+
+type Order = { item: string, quantity: int }
+
+func parseOrder(line: string): Result[Order, Error] {
+  var parts = String.split(line, ":")
+  if Array.length(parts) != 2 {
+    return Result.err(Error{ message: `expected "item: quantity", got "${line}"` })
+  }
+  var quantity = String.toInt(String.trim(parts[1])) ?? return Result.err(Error{ message: `bad quantity in "${line}"` })
+  Result.ok(Order{ item: String.trim(parts[0]), quantity: quantity })
+}
+
+func total(lines: Array[string]): Result[int, Error] {
+  var sum = 0
+  for line in lines {
+    var order = try parseOrder(line)
+    sum += order.quantity
+  }
+  Result.ok(sum)
+}
+
+for lines in [["apples: 3", "pears: 5"], ["apples: 3", "pears: five"]] {
+  var result = total(lines)
+  if result is Err {
+    println(`error: ${result.error.message}`)
+  } else {
+    println(`total: ${result.value}`)
+  }
+}

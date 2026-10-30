@@ -1,0 +1,27 @@
+{
+  "name": "ant-lang.org",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview",
+    "typecheck": "vue-tsc --noEmit",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "lint": "oxlint --deny-warnings"
+  },
+  "dependencies": {
+    "@ant-lang/monaco": "file:../ant-web/packages/monaco",
+    "@ant-lang/wasm": "file:../ant-web/packages/wasm",
+    "monaco-editor": "^0.57.0",
+    "vitepress": "^1.6.4",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "oxfmt": "^0.75.0",
+    "oxlint": "^1.90.0",
+    "typescript": "^5.9.0",
+    "vue-tsc": "^3.1.0"
+  }
+}

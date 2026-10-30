@@ -1,0 +1,37 @@
+// go starts a goroutine. Channels carry values between them,
+// and select waits for whichever is ready first.
+
+func isPrime(n: int): bool {
+  if n < 2 { return false }
+  var d = 2
+  while d * d <= n {
+    if n % d == 0 { return false }
+    d += 1
+  }
+  true
+}
+
+// Four workers count the primes in their part of the range.
+var counts: Channel[int] = Channel.new()
+for w in Iter.range(0, 4) {
+  go {
+    var count = 0
+    for n in Iter.range(w * 5000, (w + 1) * 5000) {
+      if isPrime(n) { count += 1 }
+    }
+    Channel.send(counts, count)
+  }
+}
+
+var total = 0
+for _ in Iter.range(0, 4) {
+  total += Channel.receive(counts) ?? 0
+}
+println(`primes below 20000: ${total}`)
+
+// Nobody sends on quiet, so the timer wins.
+var quiet: Channel[string] = Channel.new()
+select {
+  var message = Channel.receive(quiet) { println(message) }
+  Time.sleep(Time.duration(milliseconds: 100)) { println("timed out after 100ms") }
+}

@@ -1,0 +1,14 @@
+export type Circle = { radius: float64 }
+export type Rect = { width: float64, height: float64 }
+export type Shape = Circle | Rect
+
+// area is the area of a shape.
+export func area(s: Shape): float64 {
+  if s is Circle { Math.PI * s.radius * s.radius } else { s.width * s.height }
+}
+
+// describe names a shape and its area, rounded to two places.
+export func describe(s: Shape): string {
+  var name = if s is Circle { "circle" } else { "rect" }
+  `${name}: ${Math.round(area(s) * 100.0) / 100.0}`
+}
