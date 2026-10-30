@@ -816,16 +816,27 @@ onBeforeUnmount(() => {
   border-color: var(--vp-c-brand-1);
 }
 
+/* Run is the site's brand button, solid and calm; Stop is a plain button with a red square. */
 .button.run {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
   min-width: 84px;
-  border-color: transparent;
-  color: #fff;
-  background: linear-gradient(120deg, var(--ant-violet), var(--ant-pink));
   padding: 5px 16px;
+  border-color: var(--vp-button-brand-border);
+  color: var(--vp-button-brand-text);
+  background: var(--vp-button-brand-bg);
+}
+
+.button.run:hover {
+  border-color: var(--vp-button-brand-hover-border);
+  color: var(--vp-button-brand-hover-text);
+  background: var(--vp-button-brand-hover-bg);
+}
+
+.button.run:active {
+  background: var(--vp-button-brand-active-bg);
 }
 
 .button.run .icon {
@@ -834,18 +845,23 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.button.run:hover {
-  filter: brightness(1.08);
-}
-
 .button.run:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  filter: none;
 }
 
-.button.stop {
-  background: var(--vp-c-danger-1);
+.button.run.stop {
+  border-color: var(--border);
+  color: var(--vp-c-text-1);
+  background: var(--vp-c-bg);
+}
+
+.button.run.stop:hover {
+  border-color: var(--vp-c-danger-1);
+}
+
+.button.run.stop .icon {
+  color: var(--vp-c-danger-1);
 }
 
 .main {
