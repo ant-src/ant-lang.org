@@ -1,5 +1,17 @@
 import { defineConfig } from "vitepress";
 import type { Plugin } from "vite";
+import type { LanguageRegistration } from "shiki";
+import css from "shiki/langs/css.mjs";
+import javascript from "shiki/langs/javascript.mjs";
+// A copy of syntaxes/ant.tmLanguage.json from ant-src/vscode-ant, the grammar every editor uses.
+import antGrammar from "./ant.tmLanguage.json" with { type: "json" };
+
+// Ant code blocks in Markdown (```ant) highlight with the editor grammar. Markup expressions
+// embed CSS in <style> and JavaScript in <script>, so those grammars load with it.
+const ant: LanguageRegistration = {
+  ...(antGrammar as unknown as LanguageRegistration),
+  name: "ant",
+};
 
 // The playground compiles ant.wasm once and hands the module to its workers, so the default URL
 // in @ant-lang/wasm, which would copy ant.wasm into every worker's bundle, goes unused: drop it.
@@ -21,6 +33,7 @@ export default defineConfig({
   description: "Static types, goroutines, and nothing left undefined.",
   cleanUrls: true,
   lastUpdated: false,
+  markdown: { languages: [...css, ...javascript, ant] },
   head: [
     ["link", { rel: "icon", type: "image/png", href: "/favicon.png" }],
     ["meta", { name: "theme-color", content: "#7c3aed" }],
