@@ -571,8 +571,11 @@ onBeforeUnmount(() => {
           :title="running ? 'Stop (Esc)' : `Run (${mod1}+Enter)`"
           @click="running ? stop() : run()"
         >
-          <span class="icon" aria-hidden="true">{{ running ? "■" : "▶" }}</span
-          >{{ running ? "Stop" : "Run" }}
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true">
+            <rect v-if="running" x="3" y="3" width="10" height="10" rx="1.5" />
+            <path v-else d="M4.5 2.6v10.8a1 1 0 0 0 1.5.86l8.6-5.4a1 1 0 0 0 0-1.72L6 1.74a1 1 0 0 0-1.5.86Z" />
+          </svg>
+          {{ running ? "Stop" : "Run" }}
         </button>
       </div>
     </header>
@@ -840,9 +843,10 @@ onBeforeUnmount(() => {
 }
 
 .button.run .icon {
-  width: 10px;
-  font-size: 11px;
-  text-align: center;
+  width: 12px;
+  height: 12px;
+  flex: none;
+  fill: currentColor;
 }
 
 .button.run:disabled {
