@@ -39,3 +39,13 @@ features:
     title: Tools included
     details: A formatter, a language server for VS Code and IntelliJ, a debugger, and a REPL.
 ---
+
+## Install
+
+```sh
+curl -fsSL https://ant-lang.org/install.sh | sh
+```
+
+The script downloads the latest release's `ant` for your OS and architecture into `/usr/local/bin`.
+`ANT_VERSION=vX.Y.Z` installs that release, and `ANT_INSTALL_DIR` picks another directory. With Go
+installed, `go install github.com/ant-src/ant/cmd/ant@latest` builds it instead.
