@@ -11,6 +11,8 @@ aside: false
 
 # The Ant plugin gives IntelliJ IDEA completion, diagnostics, navigation, run configurations, tests, and debugging.
 
+<p class="actions"><a class="button" href="https://plugins.jetbrains.com/plugin/35684-ant-language">Install from the JetBrains Marketplace</a></p>
+
 </header>
 
 <section class="feature">
@@ -197,7 +199,9 @@ Breakpoints with conditions and logged expressions, frames and variables, values
 
 <section class="closing">
 
-The plugin needs IntelliJ IDEA 2025.3 or later. Its source is [ant-src/intellij-ant](https://github.com/ant-src/intellij-ant), and [Install](/docs/install) explains how to build it and where `ant` comes from.
+<p class="actions"><a class="button" href="https://plugins.jetbrains.com/plugin/35684-ant-language">Install from the JetBrains Marketplace</a></p>
+
+The plugin needs IntelliJ IDEA 2025.3 or later. The source is [ant-src/intellij-ant](https://github.com/ant-src/intellij-ant), and the plugin needs `ant`, which [Install](/docs/install) explains.
 
 </section>
 

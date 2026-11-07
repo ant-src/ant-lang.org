@@ -46,10 +46,10 @@ another `ant`. [What the extension does](/vscode).
 
 ### IntelliJ IDEA
 
-Build the plugin from [ant-src/intellij-ant](https://github.com/ant-src/intellij-ant) with
-`./gradlew buildPlugin`, and install the zip it leaves under `build/distributions` with
-**Settings | Plugins | ⚙ | Install Plugin from Disk…**. It needs IntelliJ IDEA 2025.3 or later.
-**Settings | Languages & Frameworks | Ant** names another `ant`. [What the plugin does](/intellij).
+Install [Ant from the JetBrains Marketplace](https://plugins.jetbrains.com/plugin/35684-ant-language),
+or search for Ant under **Settings | Plugins | Marketplace**. It needs IntelliJ IDEA 2025.3 or
+later. **Settings | Languages & Frameworks | Ant** names another `ant`.
+[What the plugin does](/intellij).
 
 ### Neovim
 

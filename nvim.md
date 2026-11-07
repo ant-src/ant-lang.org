@@ -11,6 +11,8 @@ aside: false
 
 # The Ant plugin gives Neovim completion, diagnostics, navigation, formatting, and debugging with nvim-dap.
 
+<p class="actions"><a class="button" href="https://github.com/ant-src/nvim-ant">Get it on GitHub</a></p>
+
 </header>
 
 <section class="feature">
@@ -210,7 +212,9 @@ The code lens above a test runs it alone, and `:Ant test-nearest` runs the test 
 
 <section class="closing">
 
-The plugin needs Neovim 0.11 or later, and nvim-dap for debugging. Its source is [ant-src/nvim-ant](https://github.com/ant-src/nvim-ant), and [Install](/docs/install) explains how to add it and where `ant` comes from.
+<p class="actions"><a class="button" href="https://github.com/ant-src/nvim-ant">Get it on GitHub</a></p>
+
+The plugin needs Neovim 0.11 or later, and nvim-dap for debugging. [Install](/docs/install) shows how to add it with lazy.nvim or as a package, and where `ant` comes from.
 
 </section>
 

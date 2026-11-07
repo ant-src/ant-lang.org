@@ -11,6 +11,8 @@ aside: false
 
 # The Ant extension gives VS Code completion, diagnostics, navigation, formatting, and debugging.
 
+<p class="actions"><a class="button" href="https://marketplace.visualstudio.com/items?itemName=ant-lang.ant-lang">Install from the Visual Studio Marketplace</a></p>
+
 </header>
 
 <section class="feature">
@@ -197,7 +199,9 @@ No `launch.json` needed: breakpoints, stepping, every goroutine's stack and vari
 
 <section class="closing">
 
-Ant for VS Code is on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=ant-lang.ant-lang), and its source is [ant-src/vscode-ant](https://github.com/ant-src/vscode-ant). It needs `ant`, which [Install](/docs/install) explains.
+<p class="actions"><a class="button" href="https://marketplace.visualstudio.com/items?itemName=ant-lang.ant-lang">Install from the Visual Studio Marketplace</a></p>
+
+The source is [ant-src/vscode-ant](https://github.com/ant-src/vscode-ant). The extension needs `ant`, which [Install](/docs/install) explains.
 
 </section>
 
