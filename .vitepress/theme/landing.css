@@ -2,8 +2,8 @@
    sentence or two with a shot, a short program and what it prints or a looping video of the
    editor, sides alternating. The type carries the page: Inter's optical size gives the headlines
    their display cut, and the shots are the only color. Dark is the studio look, a black page with
-   charcoal panels; light is the same page on white. Everything is scoped under .landing, and the
-   page's black reaches the nav through :root:has(.landing). */
+   charcoal panels; light is the same page on white. Everything is scoped under .landing, and in
+   dark mode the page's black reaches the nav through :root.dark:has(.landing). */
 
 .landing {
   --landing-ink: #1d1d1f;
@@ -43,9 +43,6 @@
 .landing h1,
 .landing h2 {
   margin: 0;
-  font-weight: 650;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 
@@ -58,6 +55,9 @@
 
 .landing h2 {
   font-size: 40px;
+  line-height: 1.1;
+  font-weight: 650;
+  letter-spacing: -0.025em;
 }
 
 .landing p {

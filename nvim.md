@@ -20,11 +20,11 @@ aside: false
 
 ## Completion, with documentation.
 
-Names in scope on CTRL-X CTRL-O, the fields of a record and the functions a pipe can continue with after `.`, each with its documentation.
+Names in scope on CTRL-X CTRL-O, the fields of a record, and the functions a pipe can continue with, each with its documentation.
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/completion.mp4" label="Completion, with documentation in Neovim" />
+<Preview src="/ide/nvim/completion.mp4" />
 </div>
 </section>
 
@@ -37,7 +37,7 @@ An error shows on leaving insert mode, as a sign and a message beside the line, 
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/diagnostics.mp4" label="Errors beside the line in Neovim" />
+<Preview src="/ide/nvim/diagnostics.mp4" />
 </div>
 </section>
 
@@ -50,7 +50,7 @@ An error shows on leaving insert mode, as a sign and a message beside the line, 
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/quick-fix.mp4" label="Fixes from the checker in Neovim" />
+<Preview src="/ide/nvim/quick-fix.mp4" />
 </div>
 </section>
 
@@ -63,7 +63,7 @@ An error shows on leaving insert mode, as a sign and a message beside the line, 
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/hover.mp4" label="The declaration on K in Neovim" />
+<Preview src="/ide/nvim/hover.mp4" />
 </div>
 </section>
 
@@ -76,7 +76,7 @@ CTRL-S shows the signature of the call being typed, with the current parameter m
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/signature.mp4" label="Signature help as you call in Neovim" />
+<Preview src="/ide/nvim/signature.mp4" />
 </div>
 </section>
 
@@ -85,11 +85,11 @@ CTRL-S shows the signature of the call being typed, with the current parameter m
 
 ## Inferred types, shown inline.
 
-Inlay hints show the type of every `var` and the name of every argument.
+Once `vim.lsp.inlay_hint.enable(true)` turns them on, inlay hints show the type of every `var` and the name of every argument.
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/inlay-hints.mp4" label="Inferred types, shown inline in Neovim" />
+<Preview src="/ide/nvim/inlay-hints.mp4" />
 </div>
 </section>
 
@@ -98,11 +98,11 @@ Inlay hints show the type of every `var` and the name of every argument.
 
 ## Formatted by ant fmt.
 
-`vim.lsp.buf.format()` runs `ant fmt`, and an autocommand on `BufWritePre` formats on save.
+`vim.lsp.buf.format()` runs `ant fmt`, and the `BufWritePre` autocommand from the README makes it format on save.
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/formatting.mp4" label="Formatted by ant fmt in Neovim" />
+<Preview src="/ide/nvim/formatting.mp4" />
 </div>
 </section>
 
@@ -115,7 +115,7 @@ Indentation follows `ant fmt` as you type, and `gcc` comments a line with `//`.
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/editing.mp4" label="Indentation as ant fmt lays it out in Neovim" />
+<Preview src="/ide/nvim/editing.mp4" />
 </div>
 </section>
 
@@ -128,7 +128,7 @@ Indentation follows `ant fmt` as you type, and `gcc` comments a line with `//`.
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/definition.mp4" label="Go to definition, across files in Neovim" />
+<Preview src="/ide/nvim/definition.mp4" />
 </div>
 </section>
 
@@ -141,7 +141,7 @@ Indentation follows `ant fmt` as you type, and `gcc` comments a line with `//`.
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/references.mp4" label="Every reference, in the quickfix list in Neovim" />
+<Preview src="/ide/nvim/references.mp4" />
 </div>
 </section>
 
@@ -154,7 +154,7 @@ Indentation follows `ant fmt` as you type, and `gcc` comments a line with `//`.
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/rename.mp4" label="Rename, everywhere in Neovim" />
+<Preview src="/ide/nvim/rename.mp4" />
 </div>
 </section>
 
@@ -167,7 +167,7 @@ Indentation follows `ant fmt` as you type, and `gcc` comments a line with `//`.
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/symbols.mp4" label="The symbols of a file in Neovim" />
+<Preview src="/ide/nvim/symbols.mp4" />
 </div>
 </section>
 
@@ -180,7 +180,7 @@ Indentation follows `ant fmt` as you type, and `gcc` comments a line with `//`.
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/run.mp4" label="Run in a terminal in Neovim" />
+<Preview src="/ide/nvim/run.mp4" />
 </div>
 </section>
 
@@ -193,7 +193,7 @@ The code lens above a test runs it alone, and `:Ant test-nearest` runs the test 
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/tests.mp4" label="Run one test from the code in Neovim" />
+<Preview src="/ide/nvim/tests.mp4" />
 </div>
 </section>
 
@@ -206,7 +206,7 @@ The code lens above a test runs it alone, and `:Ant test-nearest` runs the test 
 
 </div>
 <div class="shot">
-<Preview src="/ide/nvim/debugging.mp4" label="Debug with nvim-dap in Neovim" />
+<Preview src="/ide/nvim/debugging.mp4" />
 </div>
 </section>
 

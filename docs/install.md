@@ -48,7 +48,7 @@ another `ant`. [What the extension does](/vscode).
 
 Install [Ant from the JetBrains Marketplace](https://plugins.jetbrains.com/plugin/35684-ant-language),
 or search for Ant under **Settings | Plugins | Marketplace**. It needs IntelliJ IDEA 2025.3 or
-later. **Settings | Languages & Frameworks | Ant** names another `ant`.
+later, and 2026.1 for rename. **Settings | Languages & Frameworks | Ant** names another `ant`.
 [What the plugin does](/intellij).
 
 ### Neovim

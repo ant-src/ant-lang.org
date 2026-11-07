@@ -24,7 +24,7 @@ Names in scope, the fields of a record after `.`, and the functions a pipe can c
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/completion.mp4" label="Completion, with documentation in IntelliJ IDEA" />
+<Preview src="/ide/intellij/completion.mp4" />
 </div>
 </section>
 
@@ -37,7 +37,7 @@ An error appears as you type: the wave, the mark in the scrollbar, the inspectio
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/diagnostics.mp4" label="Errors as you type in IntelliJ IDEA" />
+<Preview src="/ide/intellij/diagnostics.mp4" />
 </div>
 </section>
 
@@ -50,7 +50,7 @@ The server's fix, from the tooltip or from ⌥⏎.
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/quick-fix.mp4" label="Fixes from the checker in IntelliJ IDEA" />
+<Preview src="/ide/intellij/quick-fix.mp4" />
 </div>
 </section>
 
@@ -63,7 +63,7 @@ The declaration and its doc comment, for the standard library and your own code.
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/documentation.mp4" label="Documentation on hover in IntelliJ IDEA" />
+<Preview src="/ide/intellij/documentation.mp4" />
 </div>
 </section>
 
@@ -76,7 +76,7 @@ The signature of the call being typed, with the current parameter in bold.
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/parameter-info.mp4" label="Parameter info as you call in IntelliJ IDEA" />
+<Preview src="/ide/intellij/parameter-info.mp4" />
 </div>
 </section>
 
@@ -89,7 +89,7 @@ Reformat Code (⌥⌘L) runs `ant fmt`, so every file is laid out the same way.
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/formatting.mp4" label="Formatted by ant fmt in IntelliJ IDEA" />
+<Preview src="/ide/intellij/formatting.mp4" />
 </div>
 </section>
 
@@ -102,7 +102,7 @@ Brackets and quotes close themselves, Enter between braces indents, and ⌘/ com
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/editing.mp4" label="Editing that knows the syntax in IntelliJ IDEA" />
+<Preview src="/ide/intellij/editing.mp4" />
 </div>
 </section>
 
@@ -115,7 +115,7 @@ Brackets and quotes close themselves, Enter between braces indents, and ⌘/ com
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/navigation.mp4" label="Go to declaration, across files in IntelliJ IDEA" />
+<Preview src="/ide/intellij/navigation.mp4" />
 </div>
 </section>
 
@@ -128,7 +128,7 @@ Brackets and quotes close themselves, Enter between braces indents, and ⌘/ com
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/usages.mp4" label="Every usage of a name in IntelliJ IDEA" />
+<Preview src="/ide/intellij/usages.mp4" />
 </div>
 </section>
 
@@ -137,11 +137,11 @@ Brackets and quotes close themselves, Enter between braces indents, and ⌘/ com
 
 ## Rename, everywhere.
 
-⇧F6 renames a name inline, with every use of it.
+⇧F6 renames a name inline, with every use of it, in IntelliJ IDEA 2026.1 or later, whose LSP client brings rename.
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/rename.mp4" label="Rename, everywhere in IntelliJ IDEA" />
+<Preview src="/ide/intellij/rename.mp4" />
 </div>
 </section>
 
@@ -154,7 +154,7 @@ Brackets and quotes close themselves, Enter between braces indents, and ⌘/ com
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/structure.mp4" label="The structure of a file in IntelliJ IDEA" />
+<Preview src="/ide/intellij/structure.mp4" />
 </div>
 </section>
 
@@ -167,7 +167,7 @@ The run icon runs `ant run` with the file in the Run tool window. Only a script,
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/run.mp4" label="Run from the gutter in IntelliJ IDEA" />
+<Preview src="/ide/intellij/run.mp4" />
 </div>
 </section>
 
@@ -180,7 +180,7 @@ In a test file, each test and each row of a table has a run icon. Run there runs
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/tests.mp4" label="Run one test from the gutter in IntelliJ IDEA" />
+<Preview src="/ide/intellij/tests.mp4" />
 </div>
 </section>
 
@@ -193,7 +193,7 @@ Breakpoints with conditions and logged expressions, frames and variables, values
 
 </div>
 <div class="shot">
-<Preview src="/ide/intellij/debugging.mp4" label="Debug a run configuration in IntelliJ IDEA" />
+<Preview src="/ide/intellij/debugging.mp4" />
 </div>
 </section>
 

@@ -24,7 +24,7 @@ Names in scope, the fields of a record after `.`, and the functions a pipe can c
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/completion.mp4" label="Completion, with signatures in VS Code" />
+<Preview src="/ide/vscode/completion.mp4" />
 </div>
 </section>
 
@@ -37,7 +37,7 @@ An error appears as you type, with its message on hover and in the Problems pane
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/diagnostics.mp4" label="Errors as you type in VS Code" />
+<Preview src="/ide/vscode/diagnostics.mp4" />
 </div>
 </section>
 
@@ -50,7 +50,7 @@ The code action adds a record field the checker found missing.
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/quick-fix.mp4" label="Fixes from the checker in VS Code" />
+<Preview src="/ide/vscode/quick-fix.mp4" />
 </div>
 </section>
 
@@ -63,7 +63,7 @@ Signatures, types, and doc comments, for the standard library and your own code.
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/hover.mp4" label="The type on hover in VS Code" />
+<Preview src="/ide/vscode/hover.mp4" />
 </div>
 </section>
 
@@ -76,7 +76,7 @@ The signature of the call being typed, with the active parameter marked.
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/signature.mp4" label="Signature help as you call in VS Code" />
+<Preview src="/ide/vscode/signature.mp4" />
 </div>
 </section>
 
@@ -89,7 +89,7 @@ Inlay hints show the type of every `var` and the name of every argument.
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/inlay-hints.mp4" label="Inferred types, shown inline in VS Code" />
+<Preview src="/ide/vscode/inlay-hints.mp4" />
 </div>
 </section>
 
@@ -102,7 +102,7 @@ Format Document runs `ant fmt`, so every file is laid out the same way.
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/formatting.mp4" label="Formatted by ant fmt in VS Code" />
+<Preview src="/ide/vscode/formatting.mp4" />
 </div>
 </section>
 
@@ -115,7 +115,7 @@ Format Document runs `ant fmt`, so every file is laid out the same way.
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/definition.mp4" label="Go to definition, across modules in VS Code" />
+<Preview src="/ide/vscode/definition.mp4" />
 </div>
 </section>
 
@@ -128,7 +128,7 @@ The uses of a name are highlighted in the document, and Peek References lists th
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/references.mp4" label="Every use of a name in VS Code" />
+<Preview src="/ide/vscode/references.mp4" />
 </div>
 </section>
 
@@ -141,7 +141,7 @@ F2 renames a variable and every use of it.
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/rename.mp4" label="Rename, everywhere in VS Code" />
+<Preview src="/ide/vscode/rename.mp4" />
 </div>
 </section>
 
@@ -154,7 +154,7 @@ F2 renames a variable and every use of it.
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/symbols.mp4" label="Symbols in the file and the workspace in VS Code" />
+<Preview src="/ide/vscode/symbols.mp4" />
 </div>
 </section>
 
@@ -167,7 +167,7 @@ Ant: Run File runs the current file with `ant run`. A task of type `ant` can be 
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/run.mp4" label="Run a file in VS Code" />
+<Preview src="/ide/vscode/run.mp4" />
 </div>
 </section>
 
@@ -180,7 +180,7 @@ In a test file, run test and debug test code lenses stand above each test and ea
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/tests.mp4" label="Run one test from the code in VS Code" />
+<Preview src="/ide/vscode/tests.mp4" />
 </div>
 </section>
 
@@ -193,7 +193,7 @@ No `launch.json` needed: breakpoints, stepping, every goroutine's stack and vari
 
 </div>
 <div class="shot">
-<Preview src="/ide/vscode/debugging.mp4" label="Debug with F5 in VS Code" />
+<Preview src="/ide/vscode/debugging.mp4" />
 </div>
 </section>
 

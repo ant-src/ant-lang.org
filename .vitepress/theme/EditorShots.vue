@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, ref } from "vue";
+import Preview from "./Preview.vue";
 
 // The editor previews on the home page: one looping video per editor, each completing the same
-// line of the same program, chosen with the buttons above it. The editor pages in docs/ show the
-// rest of the videos, one per feature.
+// line of the same program, chosen with the buttons above it. The editor pages show the rest of
+// the videos, one per feature.
 const editors = [
   { id: "vscode", name: "VS Code" },
   { id: "intellij", name: "IntelliJ" },
@@ -11,11 +12,9 @@ const editors = [
 ] as const;
 
 const current = ref<(typeof editors)[number]["id"]>("vscode");
-const reduced = ref(false);
-
-onMounted(() => {
-  reduced.value = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-});
+const label = computed(
+  () => `${editors.find((editor) => editor.id === current.value)?.name} completes the functions of Array after a pipe`,
+);
 </script>
 
 <template>
@@ -32,19 +31,7 @@ onMounted(() => {
         {{ editor.name }}
       </button>
     </div>
-    <video
-      :key="current"
-      :src="`/ide/${current}/completion.mp4`"
-      :poster="`/ide/${current}/completion.jpg`"
-      :autoplay="!reduced"
-      muted
-      loop
-      playsinline
-      preload="metadata"
-      width="1024"
-      height="640"
-      aria-label="The editor completes the functions of Array after a pipe"
-    ></video>
+    <Preview :key="current" :src="`/ide/${current}/completion.mp4`" :label="label" />
   </div>
 </template>
 
@@ -93,11 +80,5 @@ onMounted(() => {
 .tabs button:focus-visible {
   outline: 2px solid var(--vp-c-brand-1);
   outline-offset: 2px;
-}
-
-video {
-  display: block;
-  width: 100%;
-  height: auto;
 }
 </style>

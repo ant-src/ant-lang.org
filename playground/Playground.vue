@@ -393,6 +393,9 @@ onMounted(async () => {
     fixedOverflowWidgets: true,
     theme: isDark.value ? "ant-dark" : "ant-light",
   });
+  // Commit Mono is a web font: once it has loaded, Monaco measures its glyphs again, so the cursor
+  // and selections line up with the text that swapped in.
+  document.fonts.ready.then(() => monaco.editor.remeasureFonts());
   editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, run);
   editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, format);
   disposables.push(
