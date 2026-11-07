@@ -44,25 +44,25 @@ export default defineConfig({
     logo: "/logo.png",
     nav: [
       { text: "Docs", link: "/docs/install" },
+      {
+        text: "Editors",
+        items: [
+          { text: "VS Code", link: "/vscode" },
+          { text: "IntelliJ IDEA", link: "/intellij" },
+          { text: "Neovim", link: "/nvim" },
+        ],
+      },
       { text: "Playground", link: "/playground" },
       { text: "Specification", link: "https://github.com/ant-src/spec" },
     ],
     sidebar: {
-      "/docs/": [
-        { text: "Documentation", items: [{ text: "Install", link: "/docs/install" }] },
-        {
-          text: "Editors",
-          items: [
-            { text: "VS Code", link: "/docs/vscode" },
-            { text: "IntelliJ IDEA", link: "/docs/intellij" },
-            { text: "Neovim", link: "/docs/nvim" },
-          ],
-        },
-      ],
+      "/docs/": [{ text: "Documentation", items: [{ text: "Install", link: "/docs/install" }] }],
     },
     socialLinks: [{ icon: "github", link: "https://github.com/ant-src/ant" }],
     footer: {
-      message: "Released under the MIT License.",
+      message:
+        'Ant for <a href="/vscode">VS Code</a>, <a href="/intellij">IntelliJ IDEA</a>, and <a href="/nvim">Neovim</a>.',
+      copyright: "Released under the MIT License.",
     },
   },
   vite: {

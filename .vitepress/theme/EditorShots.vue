@@ -52,18 +52,18 @@ onMounted(() => {
 .editors {
   overflow: hidden;
   border-radius: 16px;
-  background: var(--home-panel);
+  background: var(--landing-panel);
 }
 
 .dark .editors {
-  box-shadow: inset 0 0 0 1px var(--home-line);
+  box-shadow: inset 0 0 0 1px var(--landing-line);
 }
 
 .tabs {
   display: flex;
   gap: 4px;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--home-line);
+  border-bottom: 1px solid var(--landing-line);
 }
 
 .tabs button {
@@ -71,7 +71,7 @@ onMounted(() => {
   border: 0;
   border-radius: 8px;
   background: none;
-  color: var(--home-ink-2);
+  color: var(--landing-ink-2);
   font: inherit;
   font-size: 13px;
   font-weight: 500;
@@ -82,11 +82,11 @@ onMounted(() => {
 }
 
 .tabs button:hover {
-  color: var(--home-ink);
+  color: var(--landing-ink);
 }
 
 .tabs button.on {
-  color: var(--home-ink);
+  color: var(--landing-ink);
   background: rgba(127, 127, 127, 0.16);
 }
 

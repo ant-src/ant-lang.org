@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
 
-// A looping preview of an editor feature on a documentation page: a short muted video that plays
-// while it is on screen and shows its first frame otherwise. A click pauses or resumes it. Readers
-// who prefer reduced motion get the first frame, and the click to play it.
+// A looping preview of an editor feature, the shot of a row on an editor's page: a short muted
+// video that plays while it is on screen and shows its first frame otherwise. A click pauses or
+// resumes it. Readers who prefer reduced motion get the first frame, and the click to play it.
 const props = defineProps<{ src: string; label: string }>();
 
 const video = ref<HTMLVideoElement>();
@@ -54,9 +54,6 @@ function toggle() {
   display: block;
   width: 100%;
   height: auto;
-  margin: 16px 0;
-  border: 1px solid var(--vp-c-divider);
-  border-radius: 8px;
   background: #000;
   cursor: pointer;
 }

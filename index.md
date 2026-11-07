@@ -5,7 +5,7 @@ sidebar: false
 aside: false
 ---
 
-<div class="home">
+<div class="landing">
 
 <header class="hero">
 
