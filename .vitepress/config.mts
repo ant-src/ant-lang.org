@@ -5,6 +5,7 @@ import css from "shiki/langs/css.mjs";
 import javascript from "shiki/langs/javascript.mjs";
 // A copy of syntaxes/ant.tmLanguage.json from ant-src/vscode-ant, the grammar every editor uses.
 import antGrammar from "./ant.tmLanguage.json" with { type: "json" };
+import { antDark, antLight } from "./ant-theme";
 
 // Ant code blocks in Markdown (```ant) highlight with the editor grammar. Markup expressions
 // embed CSS in <style> and JavaScript in <script>, so those grammars load with it.
@@ -33,7 +34,7 @@ export default defineConfig({
   description: "Static types, goroutines, and nothing left undefined.",
   cleanUrls: true,
   lastUpdated: false,
-  markdown: { languages: [...css, ...javascript, ant] },
+  markdown: { languages: [...css, ...javascript, ant], theme: { light: antLight, dark: antDark } },
   head: [
     ["link", { rel: "icon", type: "image/png", href: "/favicon.png" }],
     ["meta", { name: "theme-color", content: "#7c3aed" }],
