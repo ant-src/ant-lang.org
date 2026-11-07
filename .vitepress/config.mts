@@ -42,6 +42,8 @@ export default defineConfig({
   ],
   // A darkOnly page is dark from its first paint, whatever the reader chose for the rest of the
   // site. The page's head tags come after VitePress's own appearance script, so this one wins.
+  // The dev server renders pages in the browser only, where theme/index.ts sets the same classes
+  // before anything is drawn.
   transformHead({ pageData }) {
     if (pageData.frontmatter.darkOnly !== true) return;
     return [["script", {}, "document.documentElement.classList.add('dark', 'dark-only')"]];

@@ -20,14 +20,19 @@ export default {
   setup() {
     // A page whose frontmatter sets darkOnly is always dark and hides the appearance switch, but
     // leaves the reader's choice as it was for the other pages. The first paint gets the same
-    // classes from the script config.mts puts in the page's head.
+    // classes from the script config.mts puts in its head.
     const { frontmatter, isDark } = useData();
     if (!inBrowser) return;
+    const root = document.documentElement;
+    const darkOnly = () => frontmatter.value.darkOnly === true;
     watchEffect(() => {
-      const darkOnly = frontmatter.value.darkOnly === true;
-      const root = document.documentElement;
-      root.classList.toggle("dark-only", darkOnly);
-      root.classList.toggle("dark", darkOnly || isDark.value);
+      root.classList.toggle("dark-only", darkOnly());
+      root.classList.toggle("dark", darkOnly() || isDark.value);
     });
+    // VitePress writes the dark class itself whenever the reader's mode changes, as when the
+    // system turns light under "auto", and it writes it after the effect above: put it back.
+    new MutationObserver(() => {
+      if (darkOnly() && !root.classList.contains("dark")) root.classList.add("dark");
+    }).observe(root, { attributes: true, attributeFilter: ["class"] });
   },
 } satisfies Theme;

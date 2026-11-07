@@ -15,6 +15,7 @@
   --landing-button-hover: #e2e2e6;
   --landing-on-button: #000;
   position: relative;
+  isolation: isolate;
   max-width: 1152px;
   margin: 0 auto;
   padding: 0 24px 144px;

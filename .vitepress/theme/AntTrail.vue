@@ -10,8 +10,11 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 // have no gap to walk, so they get no ants and no hill.
 
 const colors = ["#2563eb", "#7c3aed", "#f43f5e", "#f59e0b"];
-const storageKey = "ant-hill";
+// The hill in localStorage: { total, crumbs }, the number of crumbs ever carried home and the
+// latest of them, which are the ones drawn. Every tab adds its own deliveries to what is stored.
+const storageKey = "ant-lang.org/hill";
 const maxCrumbs = 900;
+const saveDelay = 2000;
 
 const hillEl = ref<HTMLElement>();
 const canvasEl = ref<HTMLCanvasElement>();
@@ -32,7 +35,7 @@ type Ant = {
   lane: number;
   push: number;
   crumb: string | null;
-  target: Stop;
+  target: number; // an index into stops
 };
 
 let landing: HTMLElement | null = null;
@@ -48,6 +51,8 @@ let ground: HTMLCanvasElement | null = null;
 let groundX = 0;
 let groundY = 0;
 let crumbs: Crumb[] = [];
+let unsaved: Crumb[] = [];
+let saveTimer = 0;
 const ants: Ant[] = [];
 let pointer: [number, number] | null = null;
 let frame = 0;
@@ -59,23 +64,61 @@ let wide: MediaQueryList | null = null;
 let seed = 7;
 const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
 
-function load() {
+const isCrumb = (c: unknown): c is Crumb =>
+  Array.isArray(c) &&
+  c.length === 3 &&
+  colors.includes(c[0]) &&
+  Number.isFinite(c[1]) &&
+  Math.abs(c[1]) <= 1 &&
+  Number.isFinite(c[2]) &&
+  c[2] >= 0 &&
+  c[2] <= 1;
+
+// What is stored, or an empty hill when nothing usable is.
+function stored(): { total: number; crumbs: Crumb[] } {
   try {
-    const saved = JSON.parse(localStorage.getItem(storageKey) ?? "[]");
-    crumbs = Array.isArray(saved) ? saved.slice(-maxCrumbs) : [];
+    const saved = JSON.parse(localStorage.getItem(storageKey) ?? "null");
+    const list: Crumb[] = Array.isArray(saved?.crumbs) ? saved.crumbs.filter(isCrumb).slice(-maxCrumbs) : [];
+    const total = Number.isSafeInteger(saved?.total) && saved.total >= list.length ? saved.total : list.length;
+    return { total, crumbs: list };
   } catch {
-    crumbs = [];
+    return { total: 0, crumbs: [] };
   }
-  delivered.value = crumbs.length;
+}
+
+// Takes the stored hill, with this tab's unsaved deliveries on top.
+function load() {
+  const hill = stored();
+  crumbs = [...hill.crumbs, ...unsaved].slice(-maxCrumbs);
+  delivered.value = hill.total + unsaved.length;
 }
 
 function save() {
+  clearTimeout(saveTimer);
+  saveTimer = 0;
+  if (unsaved.length === 0) return;
+  const hill = stored();
+  const next = { total: hill.total + unsaved.length, crumbs: [...hill.crumbs, ...unsaved].slice(-maxCrumbs) };
   try {
-    localStorage.setItem(storageKey, JSON.stringify(crumbs.slice(-maxCrumbs)));
+    localStorage.setItem(storageKey, JSON.stringify(next));
+    unsaved = [];
+    // Another tab's crumbs may have come in under these; draw the hill as stored.
+    load();
+    buildHill();
   } catch {
     // Without storage the hill still grows for this visit.
   }
 }
+
+// Another tab saved its crumbs.
+const onStorage = (e: StorageEvent) => {
+  if (e.key !== storageKey) return;
+  load();
+  buildHill();
+};
+const onHide = () => {
+  if (document.visibilityState === "hidden") save();
+};
 
 // The trail, from the waypoints of the rows as they are laid out now.
 function layout() {
@@ -144,7 +187,7 @@ function layout() {
   for (let d = 0; d < total - 24; d += 7) dots.push(at(d));
   for (const ant of ants) {
     ant.d = Math.min(ant.d, total);
-    ant.target = stops[Math.min(stops.indexOf(ant.target), stops.length - 1)] ?? stops[0];
+    ant.target = Math.min(ant.target, stops.length - 1);
   }
   buildHill();
 }
@@ -168,6 +211,7 @@ function at(d: number): Point {
 const surface = (x: number) => hill.base - hill.h * Math.pow(Math.max(0, 1 - (x / hill.w) ** 2), 1.4);
 
 function buildHill() {
+  if (hill.w === 0) return;
   const spanX = hill.w * 1.4;
   groundX = hill.cx - spanX;
   groundY = hill.base - hill.h - 8;
@@ -207,21 +251,22 @@ function placeCrumb(g: CanvasRenderingContext2D, [color, spread, depth]: Crumb) 
   g.fill();
 }
 
+// A crumb lands on the hill at once; it is stored a little later, with whatever else came in.
 function deliver(color: string) {
   const spread = ((Math.random() + Math.random() + Math.random()) / 3) * 2 - 1;
   const crumb: Crumb = [color, Math.round(spread * 1000) / 1000, Math.round(Math.random() * 100) / 100];
   crumbs.push(crumb);
-  if (crumbs.length > maxCrumbs) crumbs.shift();
+  unsaved.push(crumb);
   const g = ground?.getContext("2d");
   if (g) placeCrumb(g, crumb);
-  delivered.value = crumbs.length;
-  save();
+  delivered.value++;
+  if (!saveTimer) saveTimer = window.setTimeout(save, saveDelay);
 }
 
 // Most ants go to a row near the hill; a few walk all the way up.
 function newTrip(ant: Ant) {
   const far = Math.floor(-Math.log(Math.random() + 1e-9) * 1.3);
-  ant.target = stops[Math.max(0, stops.length - 1 - far)];
+  ant.target = Math.max(0, stops.length - 1 - far);
   ant.dir = -1;
   ant.crumb = null;
 }
@@ -238,14 +283,15 @@ function makeAnts() {
       lane: 0,
       push: 0,
       crumb: null,
-      target: stops[0],
+      target: 0,
     };
     newTrip(ant);
     // Scattered along the trail, so the page is alive from the start.
-    ant.d = ant.target.d + Math.random() * (total - ant.target.d);
+    const stop = stops[ant.target];
+    ant.d = stop.d + Math.random() * (total - stop.d);
     if (Math.random() < 0.5) {
       ant.dir = 1;
-      ant.crumb = ant.target.color;
+      ant.crumb = stop.color;
     }
     ants.push(ant);
   }
@@ -303,10 +349,17 @@ function resizeCanvas() {
   canvas.height = Math.round(window.innerHeight * dpr);
 }
 
+// One frame. The ants walk on every frame while the page is wide enough to show them; with
+// reduced motion they stand still, and the canvas is drawn again only when the page moves.
+function schedule() {
+  if (!frame && wide?.matches) frame = requestAnimationFrame(tick);
+}
+
 function tick(now: number) {
-  frame = requestAnimationFrame(tick);
+  frame = 0;
   const dt = Math.min(50, now - last);
   last = now;
+  if (!reduce) schedule();
   const canvas = canvasEl.value;
   if (!ctx || !canvas || !landing || total === 0 || !wide?.matches) return;
   const r = landing.getBoundingClientRect();
@@ -339,15 +392,17 @@ function tick(now: number) {
 
   const near = pointer ? [pointer[0] - r.left, pointer[1] - r.top] : null;
   for (const ant of ants) {
-    if (ant.wait > 0) {
+    // An ant waits inside the hill out of sight, and at a row in plain view.
+    const waiting = ant.wait > 0;
+    if (waiting) {
       if (!reduce) ant.wait -= dt;
-      continue;
+      if (ant.d >= total) continue;
     }
     const p = at(ant.d);
     const nx = -Math.sin(p[2]);
     const ny = Math.cos(p[2]);
     let hurry = 1;
-    if (near && !reduce) {
+    if (near && !reduce && !waiting) {
       const dx = p[0] + nx * ant.push - near[0];
       const dy = p[1] + ny * ant.push - near[1];
       const dist = Math.hypot(dx, dy);
@@ -357,14 +412,15 @@ function tick(now: number) {
         hurry = 2.4;
       }
     }
-    if (!reduce) {
-      ant.push *= Math.pow(0.996, dt);
+    if (!reduce) ant.push *= Math.pow(0.996, dt);
+    if (!reduce && !waiting) {
+      const stop = stops[ant.target];
       ant.d += ant.dir * ant.speed * hurry * dt;
       ant.wob += dt * 0.022 * hurry;
-      if (ant.dir < 0 && ant.d <= ant.target.d) {
-        ant.d = ant.target.d;
+      if (ant.dir < 0 && ant.d <= stop.d) {
+        ant.d = stop.d;
         ant.dir = 1;
-        ant.crumb = ant.target.color;
+        ant.crumb = stop.color;
         ant.wait = 400 + Math.random() * 900;
       } else if (ant.dir > 0 && ant.d >= total) {
         if (ant.crumb) deliver(ant.crumb);
@@ -387,17 +443,21 @@ function tick(now: number) {
 const onPointer = (e: PointerEvent) => {
   pointer = e.pointerType === "mouse" ? [e.clientX, e.clientY] : null;
 };
-const onLeave = () => {
-  pointer = null;
+// The pointer left the window: mouseout with nowhere it went to.
+const onOut = (e: MouseEvent) => {
+  if (!e.relatedTarget) pointer = null;
 };
 const onResize = () => {
   resizeCanvas();
   layout();
+  schedule();
 };
 const onWide = () => {
   if (!wide?.matches) return;
   onResize();
   if (ants.length === 0) makeAnts();
+  last = performance.now();
+  schedule();
 };
 
 onMounted(() => {
@@ -409,22 +469,31 @@ onMounted(() => {
   wide.addEventListener("change", onWide);
   load();
   onWide();
-  observer = new ResizeObserver(() => layout());
+  observer = new ResizeObserver(() => {
+    layout();
+    schedule();
+  });
   observer.observe(landing);
   window.addEventListener("resize", onResize);
   window.addEventListener("pointermove", onPointer, { passive: true });
-  document.addEventListener("pointerleave", onLeave);
-  last = performance.now();
-  frame = requestAnimationFrame(tick);
+  document.addEventListener("mouseout", onOut);
+  window.addEventListener("storage", onStorage);
+  document.addEventListener("visibilitychange", onHide);
+  if (reduce) window.addEventListener("scroll", schedule, { passive: true });
 });
 
 onBeforeUnmount(() => {
   cancelAnimationFrame(frame);
+  frame = 0;
+  save();
   observer?.disconnect();
   wide?.removeEventListener("change", onWide);
   window.removeEventListener("resize", onResize);
   window.removeEventListener("pointermove", onPointer);
-  document.removeEventListener("pointerleave", onLeave);
+  document.removeEventListener("mouseout", onOut);
+  window.removeEventListener("storage", onStorage);
+  document.removeEventListener("visibilitychange", onHide);
+  window.removeEventListener("scroll", schedule);
 });
 </script>
 
@@ -456,8 +525,10 @@ onBeforeUnmount(() => {
   opacity: 0.7;
 }
 
+/* Behind the rows: .landing isolates, so -1 stays above the page's own background. */
 .trail {
   position: fixed;
+  z-index: -1;
   inset: 0;
   width: 100%;
   height: 100%;
