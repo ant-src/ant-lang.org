@@ -2,8 +2,8 @@
 import { onMounted, ref } from "vue";
 
 // The editor previews on the home page: one looping video per editor, each completing the same
-// line of the same program, chosen with the buttons above it. The videos are rendered from the
-// language server's real answers (see private/*-preview in the ant-lang checkout).
+// line of the same program, chosen with the buttons above it. The editor pages in docs/ show the
+// rest of the videos, one per feature.
 const editors = [
   { id: "vscode", name: "VS Code" },
   { id: "intellij", name: "IntelliJ" },
@@ -34,8 +34,8 @@ onMounted(() => {
     </div>
     <video
       :key="current"
-      :src="`/ide/${current}.mp4`"
-      :poster="`/ide/${current}.jpg`"
+      :src="`/ide/${current}/completion.mp4`"
+      :poster="`/ide/${current}/completion.jpg`"
       :autoplay="!reduced"
       muted
       loop

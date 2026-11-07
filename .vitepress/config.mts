@@ -48,7 +48,17 @@ export default defineConfig({
       { text: "Specification", link: "https://github.com/ant-src/spec" },
     ],
     sidebar: {
-      "/docs/": [{ text: "Documentation", items: [{ text: "Install", link: "/docs/install" }] }],
+      "/docs/": [
+        { text: "Documentation", items: [{ text: "Install", link: "/docs/install" }] },
+        {
+          text: "Editors",
+          items: [
+            { text: "VS Code", link: "/docs/vscode" },
+            { text: "IntelliJ IDEA", link: "/docs/intellij" },
+            { text: "Neovim", link: "/docs/nvim" },
+          ],
+        },
+      ],
     },
     socialLinks: [{ icon: "github", link: "https://github.com/ant-src/ant" }],
     footer: {

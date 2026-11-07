@@ -31,3 +31,8 @@ ant fmt .
 ant test .
 ant doc Array.map
 ```
+
+## Editors
+
+The language server and the debugger come with the binary, and a plugin brings them to the editor:
+[VS Code](/docs/vscode), [IntelliJ IDEA](/docs/intellij), or [Neovim](/docs/nvim).

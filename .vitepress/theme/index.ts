@@ -5,10 +5,12 @@ import "@fontsource/commit-mono/400-italic.css";
 import "./custom.css";
 import "./home.css";
 import EditorShots from "./EditorShots.vue";
+import Preview from "./Preview.vue";
 
 export default {
   extends: DefaultTheme,
   enhanceApp({ app }) {
     app.component("EditorShots", EditorShots);
+    app.component("Preview", Preview);
   },
 } satisfies Theme;
