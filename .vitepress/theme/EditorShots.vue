@@ -42,7 +42,7 @@ const label = computed(
   background: var(--landing-panel);
 }
 
-.dark .editors {
+.editors {
   box-shadow: inset 0 0 0 1px var(--landing-line);
 }
 

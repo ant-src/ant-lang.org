@@ -3,6 +3,7 @@ layout: page
 title: Ant
 sidebar: false
 aside: false
+darkOnly: true
 ---
 
 <div class="landing">
@@ -130,5 +131,7 @@ The language server brings completion, hover, go to definition, rename, and diag
 </div>
 <EditorShots />
 </section>
+
+<AntTrail />
 
 </div>

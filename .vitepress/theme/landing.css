@@ -1,25 +1,12 @@
 /* The landing pages, the home page and one per editor: one sentence, then rows that pair a
    sentence or two with a shot, a short program and what it prints or a looping video of the
    editor, sides alternating. The type carries the page: Inter's optical size gives the headlines
-   their display cut, and the shots are the only color. Dark is the studio look, a black page with
-   charcoal panels; light is the same page on white. Everything is scoped under .landing, and in
-   dark mode the page's black reaches the nav through :root.dark:has(.landing). */
+   their display cut, and the shots are the only color. The pages are dark only, the studio look:
+   a black page with charcoal panels. Their frontmatter sets darkOnly, which keeps the site dark
+   while they are open and hides the appearance switch (theme/index.ts). Everything is scoped
+   under .landing, and the page's black reaches the nav through :root:has(.landing). */
 
 .landing {
-  --landing-ink: #1d1d1f;
-  --landing-ink-2: #6e6e73;
-  --landing-panel: #f5f5f7;
-  --landing-line: rgba(0, 0, 0, 0.08);
-  --landing-button: var(--vp-c-brand-1);
-  --landing-button-hover: var(--vp-c-brand-2);
-  --landing-on-button: #fff;
-  max-width: 1152px;
-  margin: 0 auto;
-  padding: 0 24px 144px;
-  color: var(--landing-ink);
-}
-
-.dark .landing {
   --landing-ink: #f5f5f7;
   --landing-ink-2: #a1a1a6;
   --landing-panel: #141416;
@@ -27,9 +14,21 @@
   --landing-button: #fff;
   --landing-button-hover: #e2e2e6;
   --landing-on-button: #000;
+  position: relative;
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px 144px;
+  color: var(--landing-ink);
 }
 
-:root.dark:has(.landing) {
+/* The home page ends on the anthill, which brings its own room. Narrow screens have no hill. */
+@media (min-width: 960px) {
+  .landing:has(> .hill) {
+    padding-bottom: 24px;
+  }
+}
+
+:root:has(.landing) {
   --vp-c-bg: #000;
   --vp-nav-bg-color: #000;
 }
@@ -119,9 +118,6 @@
   border-radius: 16px;
   background: var(--landing-panel);
   text-align: left;
-}
-
-.dark .landing .shot {
   box-shadow: inset 0 0 0 1px var(--landing-line);
 }
 

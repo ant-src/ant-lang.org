@@ -20,3 +20,14 @@
   --vp-c-brand-3: #7c3aed;
   --vp-c-brand-soft: rgba(139, 92, 246, 0.16);
 }
+
+/* The appearance switch, gone on the pages that are dark only. */
+html.dark-only .VPNavBarAppearance,
+html.dark-only .VPNavScreenAppearance,
+html.dark-only .VPNavBarExtra .group:has(.appearance) {
+  display: none;
+}
+
+html.dark-only .VPNavBarExtra .group:has(.appearance) + .group {
+  border-top: 0;
+}

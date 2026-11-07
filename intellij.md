@@ -3,6 +3,7 @@ layout: page
 title: Ant for IntelliJ IDEA
 sidebar: false
 aside: false
+darkOnly: true
 ---
 
 <div class="landing">

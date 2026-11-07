@@ -40,6 +40,12 @@ export default defineConfig({
     ["link", { rel: "icon", type: "image/png", href: "/favicon.png" }],
     ["meta", { name: "theme-color", content: "#7c3aed" }],
   ],
+  // A darkOnly page is dark from its first paint, whatever the reader chose for the rest of the
+  // site. The page's head tags come after VitePress's own appearance script, so this one wins.
+  transformHead({ pageData }) {
+    if (pageData.frontmatter.darkOnly !== true) return;
+    return [["script", {}, "document.documentElement.classList.add('dark', 'dark-only')"]];
+  },
   themeConfig: {
     logo: "/logo.png",
     nav: [
