@@ -4,10 +4,10 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 // The ants of the home page. A dotted trail winds from under the headline, beside every row,
 // down to an anthill at the bottom of the page. Ants leave the hill, walk up to a row, pick up a
 // crumb in that row's color, and carry it home, where it stays on the hill as a colored grain.
-// The hill is kept in this browser, so it grows from visit to visit. Ants step aside from the
-// pointer. Everything is drawn on one canvas the size of the window, fixed behind the rows. The
-// rows are two columns from 960px up, and the trail walks the gap between them; narrower screens
-// have no gap to walk, so they get no ants and no hill.
+// The hill is kept in this browser, so it grows from visit to visit. Everything is drawn on one
+// canvas the size of the window, fixed behind the rows. The rows are two columns from 960px up,
+// and the trail walks the gap between them; narrower screens have no gap to walk, so they get no
+// ants and no hill.
 
 const colors = ["#2563eb", "#7c3aed", "#f43f5e", "#f59e0b"];
 // The hill in localStorage: { total, crumbs }, the number of crumbs ever carried home and the
@@ -33,7 +33,6 @@ type Ant = {
   wob: number;
   wait: number;
   lane: number;
-  push: number;
   crumb: string | null;
   target: number; // an index into stops
 };
@@ -54,7 +53,6 @@ let crumbs: Crumb[] = [];
 let unsaved: Crumb[] = [];
 let saveTimer = 0;
 const ants: Ant[] = [];
-let pointer: [number, number] | null = null;
 let frame = 0;
 let last = 0;
 let observer: ResizeObserver | null = null;
@@ -281,7 +279,6 @@ function makeAnts() {
       wob: Math.random() * Math.PI * 2,
       wait: 0,
       lane: 0,
-      push: 0,
       crumb: null,
       target: 0,
     };
@@ -390,7 +387,6 @@ function tick(now: number) {
   }
   ctx.fill();
 
-  const near = pointer ? [pointer[0] - r.left, pointer[1] - r.top] : null;
   for (const ant of ants) {
     // An ant waits inside the hill out of sight, and at a row in plain view.
     const waiting = ant.wait > 0;
@@ -401,22 +397,10 @@ function tick(now: number) {
     const p = at(ant.d);
     const nx = -Math.sin(p[2]);
     const ny = Math.cos(p[2]);
-    let hurry = 1;
-    if (near && !reduce && !waiting) {
-      const dx = p[0] + nx * ant.push - near[0];
-      const dy = p[1] + ny * ant.push - near[1];
-      const dist = Math.hypot(dx, dy);
-      if (dist < 56) {
-        const away = dx * nx + dy * ny >= 0 ? 1 : -1;
-        ant.push = Math.max(-22, Math.min(22, ant.push + away * (56 - dist) * 0.012 * dt));
-        hurry = 2.4;
-      }
-    }
-    if (!reduce) ant.push *= Math.pow(0.996, dt);
     if (!reduce && !waiting) {
       const stop = stops[ant.target];
-      ant.d += ant.dir * ant.speed * hurry * dt;
-      ant.wob += dt * 0.022 * hurry;
+      ant.d += ant.dir * ant.speed * dt;
+      ant.wob += dt * 0.022;
       if (ant.dir < 0 && ant.d <= stop.d) {
         ant.d = stop.d;
         ant.dir = 1;
@@ -433,20 +417,13 @@ function tick(now: number) {
     if (p[1] < top || p[1] > bottom) continue;
     // Ants going up and ants coming home keep to their own side of the trail.
     ant.lane += ((ant.dir > 0 ? 3 : -3) - ant.lane) * 0.08;
-    const side = ant.lane + ant.push + Math.sin(ant.wob * 0.15) * 1.3;
+    const side = ant.lane + Math.sin(ant.wob * 0.15) * 1.3;
     const heading = p[2] + (ant.dir < 0 ? Math.PI : 0);
     const alpha = Math.min(1, (total - ant.d) / 14 + 0.05);
     drawAnt(ctx, p[0] + nx * side, p[1] + ny * side, heading, ant.wob, ant.crumb, alpha);
   }
 }
 
-const onPointer = (e: PointerEvent) => {
-  pointer = e.pointerType === "mouse" ? [e.clientX, e.clientY] : null;
-};
-// The pointer left the window: mouseout with nowhere it went to.
-const onOut = (e: MouseEvent) => {
-  if (!e.relatedTarget) pointer = null;
-};
 const onResize = () => {
   resizeCanvas();
   layout();
@@ -475,8 +452,6 @@ onMounted(() => {
   });
   observer.observe(landing);
   window.addEventListener("resize", onResize);
-  window.addEventListener("pointermove", onPointer, { passive: true });
-  document.addEventListener("mouseout", onOut);
   window.addEventListener("storage", onStorage);
   document.addEventListener("visibilitychange", onHide);
   if (reduce) window.addEventListener("scroll", schedule, { passive: true });
@@ -489,8 +464,6 @@ onBeforeUnmount(() => {
   observer?.disconnect();
   wide?.removeEventListener("change", onWide);
   window.removeEventListener("resize", onResize);
-  window.removeEventListener("pointermove", onPointer);
-  document.removeEventListener("mouseout", onOut);
   window.removeEventListener("storage", onStorage);
   document.removeEventListener("visibilitychange", onHide);
   window.removeEventListener("scroll", schedule);
