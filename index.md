@@ -43,27 +43,23 @@ println(result)
 
 ## Errors are values.
 
-A function that can fail returns a `Result`. `try` hands an error up to the caller, and `?? return` does the same for a missing value. Nothing is thrown.
+A function that can fail returns a `Result`. `try` hands an error up to the caller. Nothing is thrown.
 
 </div>
 <div class="shot">
 
 ```ant
-type Config = { port: int }
-
-func loadConfig(path: string): Result[Config, Error] {
+func load(path: string): Result[Json.Value, Error] {
   var text = try File.read(path)
-  var port = String.toInt(String.trim(text)) ??
-    return Result.err(Error{ message: "${path}: not a port" })
-  Result.ok(Config{ port: port })
+  Json.parse(text)
 }
 
-var config = loadConfig("port.txt")
+var config = load("config.json")
 if config is Err { println(config.error.message) }
 ```
 
 ```txt
-open port.txt: no such file or directory
+open config.json: no such file or directory
 ```
 
 </div>
