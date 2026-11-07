@@ -33,6 +33,7 @@ export default defineConfig({
   title: "Ant",
   description: "Static types, goroutines, and nothing left undefined.",
   cleanUrls: true,
+  appearance: "dark",
   lastUpdated: false,
   markdown: { languages: [...css, ...javascript, ant], theme: { light: antLight, dark: antDark } },
   head: [
