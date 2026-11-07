@@ -1,6 +1,7 @@
-/* The home page: a hero, rows that alternate text and a shot of a program, and install. The
-   type carries the page: Inter's optical size gives the headlines their display cut, and the
-   shots are the only color. Everything is scoped under .home. */
+/* The home page: a description, then rows that pair a sentence or two with a short program and
+   what it prints, sides alternating. The type carries the page: Inter's optical size gives the
+   headlines their display cut, and the programs are the only color. Everything is scoped under
+   .home. */
 
 .home {
   --home-ink: #1d1d1f;
@@ -30,37 +31,28 @@
 .home h2 {
   margin: 0;
   font-weight: 650;
-  line-height: 1.06;
-  letter-spacing: -0.03em;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 
 .home h1 {
-  font-size: 72px;
+  font-size: 52px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
 .home h2 {
-  font-size: 44px;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
+  font-size: 40px;
 }
 
 .home p {
-  margin: 20px 0 0;
-  font-size: 20px;
+  margin: 16px 0 0;
+  font-size: 19px;
   line-height: 1.45;
   color: var(--home-ink-2);
-}
-
-.home p a {
-  color: var(--vp-c-brand-1);
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.home p a:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  max-width: 40ch;
 }
 
 .home p code {
@@ -69,53 +61,21 @@
   color: var(--home-ink);
 }
 
-/* The hero */
+/* The opening */
 
 .home .hero {
-  padding-top: 96px;
+  padding-top: 88px;
   text-align: center;
 }
 
 .home .hero .text {
-  max-width: 920px;
+  max-width: 960px;
   margin: 0 auto;
 }
 
-.home .hero p {
-  max-width: 34ch;
-  margin: 24px auto 0;
-  font-size: 24px;
-  line-height: 1.4;
-}
-
-.home .actions {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 32px;
-  margin-top: 36px;
-  font-size: 19px;
-}
-
-.home .button {
-  display: inline-block;
-  padding: 12px 24px;
-  border-radius: 980px;
-  background: var(--vp-c-brand-1);
-  color: #fff;
-  font-weight: 500;
-  text-decoration: none;
-  transition: background-color 0.2s;
-}
-
-.home .button:hover {
-  background: var(--vp-c-brand-2);
-  text-decoration: none;
-}
-
 .home .hero .shot {
-  max-width: 880px;
-  margin: 64px auto 0;
+  max-width: 760px;
+  margin: 56px auto 0;
 }
 
 .home .hero .shot pre {
@@ -126,14 +86,14 @@
 
 .home section.feature {
   display: grid;
-  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
-  gap: 48px 64px;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 40px 64px;
   align-items: center;
-  margin-top: 160px;
+  margin-top: 128px;
 }
 
 .home section.feature:nth-of-type(even) {
-  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
 }
 
 .home section.feature:nth-of-type(even) > .text {
@@ -146,16 +106,12 @@
   grid-row: 1;
 }
 
-.home .feature .text p {
-  max-width: 38ch;
-}
-
 /* The shots: a program, and under a hairline, what it prints */
 
 .home .shot {
   min-width: 0;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 16px;
   background: var(--home-panel);
   text-align: left;
 }
@@ -170,7 +126,7 @@
 
 .home .shot pre {
   margin: 0;
-  padding: 24px 28px;
+  padding: 22px 26px;
   overflow-x: auto;
   font-family: var(--vp-font-family-mono);
   font-size: 14px;
@@ -195,7 +151,7 @@
 }
 
 .home .shot .language-txt pre {
-  padding: 18px 28px 20px;
+  padding: 14px 26px 16px;
   font-size: 13px;
 }
 
@@ -203,95 +159,35 @@
   color: var(--home-ink-2);
 }
 
-/* Install */
-
-.home .install {
-  margin-top: 176px;
-  text-align: center;
-}
-
-.home .install p {
-  max-width: 46ch;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.home .install .shot {
-  max-width: 640px;
-  margin: 36px auto 0;
-  text-align: left;
-}
-
-.home .install .shot pre {
-  padding: 22px 28px;
-  font-size: 15px;
-}
-
-.home .install .shot .copy {
-  display: block;
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
-  border: 0;
-  border-radius: 8px;
-  background: var(--home-panel) var(--vp-icon-copy) center / 20px no-repeat;
-  opacity: 0;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.home .install .shot:hover .copy,
-.home .install .shot .copy:focus-visible {
-  opacity: 1;
-}
-
-.home .install .shot .copy.copied {
-  background-image: var(--vp-icon-copied);
-}
-
-.home .install .links {
-  margin-top: 28px;
-  font-size: 19px;
-}
-
-.home .install .links a + a {
-  margin-left: 28px;
-}
-
 /* Narrow screens: one column, text above its shot */
 
 @media (max-width: 959px) {
   .home h1 {
-    font-size: 48px;
+    font-size: 36px;
   }
 
   .home h2 {
-    font-size: 34px;
+    font-size: 32px;
   }
 
   .home p {
     font-size: 18px;
+    max-width: none;
   }
 
   .home .hero {
-    padding-top: 64px;
-  }
-
-  .home .hero p {
-    font-size: 20px;
+    padding-top: 56px;
   }
 
   .home .hero .shot {
-    margin-top: 48px;
+    margin-top: 40px;
   }
 
   .home section.feature,
   .home section.feature:nth-of-type(even) {
     grid-template-columns: minmax(0, 1fr);
-    gap: 28px;
-    margin-top: 104px;
+    gap: 24px;
+    margin-top: 88px;
   }
 
   .home section.feature:nth-of-type(even) > .text,
@@ -300,19 +196,10 @@
     grid-row: auto;
   }
 
-  .home .feature .text p {
-    max-width: none;
-  }
-
   .home .shot pre,
-  .home .hero .shot pre,
-  .home .install .shot pre {
-    padding: 20px 22px;
+  .home .hero .shot pre {
+    padding: 18px 20px;
     font-size: 13px;
-  }
-
-  .home .install {
-    margin-top: 120px;
   }
 }
 
@@ -322,25 +209,14 @@
   }
 
   .home h1 {
-    font-size: 38px;
-    letter-spacing: -0.025em;
-  }
-
-  .home h2 {
     font-size: 30px;
   }
 
-  .home .actions {
-    flex-direction: column;
-    gap: 16px;
+  .home h2 {
+    font-size: 28px;
   }
 
   .home .shot {
-    border-radius: 14px;
-  }
-
-  .home .install .links a + a {
-    display: block;
-    margin: 12px 0 0;
+    border-radius: 12px;
   }
 }

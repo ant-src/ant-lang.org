@@ -42,9 +42,13 @@ export default defineConfig({
   themeConfig: {
     logo: "/logo.png",
     nav: [
+      { text: "Docs", link: "/docs/install" },
       { text: "Playground", link: "/playground" },
       { text: "Specification", link: "https://github.com/ant-src/spec" },
     ],
+    sidebar: {
+      "/docs/": [{ text: "Documentation", items: [{ text: "Install", link: "/docs/install" }] }],
+    },
     socialLinks: [{ icon: "github", link: "https://github.com/ant-src/ant" }],
     footer: {
       message: "Released under the MIT License.",
