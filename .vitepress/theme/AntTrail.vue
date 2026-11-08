@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 
 // The ants of the home page. A dotted trail winds from under the headline, beside every row,
 // down to an anthill at the bottom of the page. Ants leave the hill, walk up to a row, pick up a
@@ -10,18 +10,14 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 // ants and no hill.
 
 const colors = ["#2563eb", "#7c3aed", "#f43f5e", "#f59e0b"];
-// The hill in localStorage: { total, crumbs }, the number of crumbs ever carried home and the
-// latest of them, which are the ones drawn. Every tab adds its own deliveries to what is stored.
+// The hill in localStorage: { crumbs }, the latest crumbs carried home, which are the ones drawn.
+// Every tab adds its own deliveries to what is stored.
 const storageKey = "ant-lang.org/hill";
 const maxCrumbs = 900;
 const saveDelay = 2000;
 
 const hillEl = ref<HTMLElement>();
 const canvasEl = ref<HTMLCanvasElement>();
-const delivered = ref(0);
-const count = computed(() =>
-  delivered.value === 0 ? "" : `${delivered.value} ${delivered.value === 1 ? "crumb" : "crumbs"} carried home`,
-);
 
 type Point = [number, number, number]; // x, y, and the trail's heading there
 type Stop = { d: number; color: string | null };
@@ -73,30 +69,25 @@ const isCrumb = (c: unknown): c is Crumb =>
   c[2] <= 1;
 
 // What is stored, or an empty hill when nothing usable is.
-function stored(): { total: number; crumbs: Crumb[] } {
+function stored(): Crumb[] {
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey) ?? "null");
-    const list: Crumb[] = Array.isArray(saved?.crumbs) ? saved.crumbs.filter(isCrumb).slice(-maxCrumbs) : [];
-    const total = Number.isSafeInteger(saved?.total) && saved.total >= list.length ? saved.total : list.length;
-    return { total, crumbs: list };
+    return Array.isArray(saved?.crumbs) ? saved.crumbs.filter(isCrumb).slice(-maxCrumbs) : [];
   } catch {
-    return { total: 0, crumbs: [] };
+    return [];
   }
 }
 
 // Takes the stored hill, with this tab's unsaved deliveries on top.
 function load() {
-  const hill = stored();
-  crumbs = [...hill.crumbs, ...unsaved].slice(-maxCrumbs);
-  delivered.value = hill.total + unsaved.length;
+  crumbs = [...stored(), ...unsaved].slice(-maxCrumbs);
 }
 
 function save() {
   clearTimeout(saveTimer);
   saveTimer = 0;
   if (unsaved.length === 0) return;
-  const hill = stored();
-  const next = { total: hill.total + unsaved.length, crumbs: [...hill.crumbs, ...unsaved].slice(-maxCrumbs) };
+  const next = { crumbs: [...stored(), ...unsaved].slice(-maxCrumbs) };
   try {
     localStorage.setItem(storageKey, JSON.stringify(next));
     unsaved = [];
@@ -257,7 +248,6 @@ function deliver(color: string) {
   unsaved.push(crumb);
   const g = ground?.getContext("2d");
   if (g) placeCrumb(g, crumb);
-  delivered.value++;
   if (!saveTimer) saveTimer = window.setTimeout(save, saveDelay);
 }
 
@@ -471,9 +461,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="hillEl" class="hill">
-    <p class="count">{{ count }}</p>
-  </div>
+  <div ref="hillEl" class="hill"></div>
   <canvas ref="canvasEl" class="trail" aria-hidden="true"></canvas>
 </template>
 
@@ -482,20 +470,6 @@ onBeforeUnmount(() => {
   position: relative;
   height: 300px;
   margin-top: 72px;
-}
-
-.hill .count {
-  position: absolute;
-  inset: auto 0 0;
-  margin: 0;
-  max-width: none;
-  text-align: center;
-  font-family: var(--vp-font-family-mono);
-  font-size: 12px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--landing-ink-2);
-  opacity: 0.7;
 }
 
 /* Behind the rows: .landing isolates, so -1 stays above the page's own background. */
