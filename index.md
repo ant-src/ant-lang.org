@@ -10,6 +10,8 @@ darkOnly: true
 
 <header class="hero">
 
+<img class="logo" src="/logo.svg" alt="" width="176" height="176">
+
 # Ant is a typed language with errors as values, pipes for data, and goroutines.
 
 </header>

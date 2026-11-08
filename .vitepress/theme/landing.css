@@ -83,6 +83,29 @@
   text-align: center;
 }
 
+/* The ant above the home page's headline, which names the language right after it, so the
+   image is left unnamed. It rises into place as the page opens. */
+.landing .hero .logo {
+  display: block;
+  width: 176px;
+  height: 176px;
+  margin: 0 auto 32px;
+  animation: landing-logo 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes landing-logo {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing .hero .logo {
+    animation: none;
+  }
+}
+
 /* The rows */
 
 .landing section.feature {
@@ -179,6 +202,12 @@
 
   .landing .hero {
     padding-top: 56px;
+  }
+
+  .landing .hero .logo {
+    width: 128px;
+    height: 128px;
+    margin-bottom: 24px;
   }
 
   .landing section.feature,
