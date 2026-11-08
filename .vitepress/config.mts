@@ -31,7 +31,7 @@ function oneAntWasm(): Plugin {
 
 export default defineConfig({
   title: "Ant",
-  description: "Static types, goroutines, and nothing left undefined.",
+  description: "Ant is a typed language with errors as values, pipes for data, and goroutines.",
   cleanUrls: true,
   appearance: "dark",
   lastUpdated: false,
