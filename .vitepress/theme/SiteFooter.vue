@@ -118,7 +118,7 @@ onUnmounted(() => query?.removeEventListener("change", update));
       </nav>
 
       <div class="legal">
-        <p class="copyright">Copyright © {{ years }} Anton Medvedev. Released under the MIT License.</p>
+        <p class="copyright">Copyright © {{ years }} Anton Medvedev</p>
         <ul class="legal-links">
           <li>
             <a href="https://github.com/ant-src/ant/blob/master/LICENSE" target="_blank" rel="noreferrer">License</a>
