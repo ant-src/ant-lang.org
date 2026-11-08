@@ -10,7 +10,7 @@ darkOnly: true
 
 <header class="hero">
 
-# Ant is a statically typed language with goroutines and errors as values.
+# Ant is a typed language with errors as values, pipes for data, and goroutines.
 
 </header>
 
