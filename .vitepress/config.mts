@@ -67,13 +67,10 @@ export default defineConfig({
       "/docs/": [{ text: "Documentation", items: [{ text: "Install", link: "/docs/install" }] }],
     },
     socialLinks: [{ icon: "github", link: "https://github.com/ant-src/ant" }],
-    footer: {
-      message:
-        'Ant for <a href="/vscode">VS Code</a>, <a href="/intellij">IntelliJ IDEA</a>, and <a href="/nvim">Neovim</a>.',
-      copyright: "Released under the MIT License.",
-    },
   },
   vite: {
+    // The year in the footer's copyright (theme/SiteFooter.vue).
+    define: { __BUILD_YEAR__: JSON.stringify(new Date().getFullYear()) },
     // The Ant packages point at their worker and ant.wasm with new URL(..., import.meta.url),
     // which dependency pre-bundling would break.
     optimizeDeps: { exclude: ["@ant-lang/monaco", "@ant-lang/wasm"] },

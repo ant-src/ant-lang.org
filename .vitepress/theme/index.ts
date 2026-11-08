@@ -1,7 +1,7 @@
 import type { Theme } from "vitepress";
 import { inBrowser, useData } from "vitepress";
 import DefaultTheme from "vitepress/theme";
-import { watchEffect } from "vue";
+import { h, watchEffect } from "vue";
 import "@fontsource/commit-mono/400.css";
 import "@fontsource/commit-mono/400-italic.css";
 import "./custom.css";
@@ -9,9 +9,12 @@ import "./landing.css";
 import AntTrail from "./AntTrail.vue";
 import EditorShots from "./EditorShots.vue";
 import Preview from "./Preview.vue";
+import SiteFooter from "./SiteFooter.vue";
 
 export default {
   extends: DefaultTheme,
+  // The site's own footer takes the place of the default theme's, on every page.
+  Layout: () => h(DefaultTheme.Layout, null, { "layout-bottom": () => h(SiteFooter) }),
   enhanceApp({ app }) {
     app.component("AntTrail", AntTrail);
     app.component("EditorShots", EditorShots);
