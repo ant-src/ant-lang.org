@@ -14,6 +14,8 @@ With Go installed, `go install` builds it from source instead:
 go install github.com/ant-src/ant/cmd/ant@latest
 ```
 
+`ant version` prints the release you have.
+
 ## Run a program
 
 `ant check` type-checks a file with its imports, and `ant run` runs it:
