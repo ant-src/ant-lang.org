@@ -4,19 +4,33 @@
 // frontmatter sets footer to false, the playground, has none.
 import { useData } from "vitepress";
 import { useSidebar } from "vitepress/theme";
-import { onMounted, onUnmounted, reactive, ref } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 
 type Link = { text: string; link: string };
 type Column = { title: string; links: Link[] };
 
-const columns: Column[] = [
+const { frontmatter, theme } = useData();
+
+// Learn and Reference follow the Docs menu, which lists the sections of the docs that have pages,
+// so the footer never links a section that is not written yet.
+type NavEntry = { text?: string; link?: string; items?: NavEntry[] };
+const docsGroup = (title: string): Link[] => {
+  const docs = (theme.value.nav as NavEntry[]).find((item) => item.text === "Docs");
+  const group = docs?.items?.find((item) => item.text === title);
+  return (group?.items ?? []).flatMap(({ text, link }) => (text && link ? [{ text, link }] : []));
+};
+
+const install = "/docs/start/install";
+const columns = computed((): Column[] => [
   {
     title: "Learn",
     links: [
-      { text: "Install", link: "/docs/start/install" },
+      { text: "Install", link: install },
+      ...docsGroup("Learn").filter((item) => item.link !== install),
       { text: "Playground", link: "/playground" },
     ],
   },
+  { title: "Reference", links: docsGroup("Reference") },
   {
     title: "Editors",
     links: [
@@ -26,35 +40,24 @@ const columns: Column[] = [
     ],
   },
   {
-    title: "Get the Extensions",
+    // For running Ant inside a Go program or a web page.
+    title: "Embed",
     links: [
-      {
-        text: "Visual Studio Marketplace",
-        link: "https://marketplace.visualstudio.com/items?itemName=ant-lang.ant-lang",
-      },
-      { text: "JetBrains Marketplace", link: "https://plugins.jetbrains.com/plugin/35684-ant-language" },
-      { text: "nvim-ant", link: "https://github.com/ant-src/nvim-ant" },
+      { text: "Go package", link: "https://pkg.go.dev/github.com/ant-src/ant" },
+      { text: "@ant-lang/wasm", link: "https://www.npmjs.com/package/@ant-lang/wasm" },
+      { text: "@ant-lang/monaco", link: "https://www.npmjs.com/package/@ant-lang/monaco" },
     ],
   },
   {
-    title: "For the Web",
+    title: "Project",
     links: [
-      { text: "@ant-lang/wasm", link: "https://github.com/ant-src/ant-web/tree/master/packages/wasm" },
-      { text: "@ant-lang/monaco", link: "https://github.com/ant-src/ant-web/tree/master/packages/monaco" },
+      { text: "Ask a question", link: "https://github.com/ant-src/ant/discussions" },
+      { text: "Report a bug", link: "https://github.com/ant-src/ant/issues/new" },
+      { text: "Releases", link: "https://github.com/ant-src/ant/releases" },
+      { text: "Source", link: "https://github.com/ant-src/ant" },
     ],
   },
-  {
-    title: "Source",
-    links: [
-      { text: "Ant", link: "https://github.com/ant-src/ant" },
-      { text: "VS Code extension", link: "https://github.com/ant-src/vscode-ant" },
-      { text: "IntelliJ plugin", link: "https://github.com/ant-src/intellij-ant" },
-      { text: "This website", link: "https://github.com/ant-src/ant-lang.org" },
-    ],
-  },
-];
-
-const { frontmatter } = useData();
+]);
 const { hasSidebar } = useSidebar();
 
 // The year the site was built, so the copyright stays current without an edit each January.
@@ -120,10 +123,10 @@ onUnmounted(() => query?.removeEventListener("change", update));
         <p class="copyright">Copyright © {{ years }} Anton Medvedev</p>
         <ul class="legal-links">
           <li>
-            <a href="https://github.com/ant-src/ant/blob/master/LICENSE" target="_blank" rel="noreferrer">License</a>
+            <a href="https://github.com/ant-src/ant/blob/master/LICENSE" target="_blank" rel="noreferrer"
+              >MIT License</a
+            >
           </li>
-          <li><a href="https://github.com/ant-src/ant/issues" target="_blank" rel="noreferrer">Report an Issue</a></li>
-          <li><a href="https://github.com/ant-src/ant" target="_blank" rel="noreferrer">GitHub</a></li>
         </ul>
       </div>
     </div>
