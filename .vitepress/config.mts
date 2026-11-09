@@ -77,6 +77,7 @@ export default defineConfig({
           ? `https://github.com/ant-src/ant/edit/master/${filePath}`
           : `https://github.com/ant-src/ant-lang.org/edit/master/${filePath}`,
     },
+    search: { provider: "local" },
     socialLinks: [{ icon: "github", link: "https://github.com/ant-src/ant" }],
   },
   vite: {
