@@ -123,10 +123,10 @@ onUnmounted(() => query?.removeEventListener("change", update));
         <p class="copyright">Copyright © {{ years }} Anton Medvedev</p>
         <ul class="legal-links">
           <li>
-            <a href="https://github.com/ant-src/ant/blob/master/LICENSE" target="_blank" rel="noreferrer"
-              >MIT License</a
-            >
+            <a href="https://github.com/ant-src/ant/blob/master/LICENSE" target="_blank" rel="noreferrer">License</a>
           </li>
+          <li><a href="https://github.com/ant-src/ant/issues" target="_blank" rel="noreferrer">Report an Issue</a></li>
+          <li><a href="https://github.com/ant-src/ant" target="_blank" rel="noreferrer">GitHub</a></li>
         </ul>
       </div>
     </div>
