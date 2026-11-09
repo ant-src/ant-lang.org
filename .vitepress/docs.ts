@@ -25,6 +25,7 @@ export type DocsNav = { sidebar: DefaultTheme.SidebarMulti; menu: DefaultTheme.N
 const first = ["start/install.md", "start/editors.md", "start/first-program.md"];
 
 // The sections of docs/README.md, as the Docs menu lists them.
+type Section = [dir: string, title: string];
 const learn: Section[] = [
   ["start", "Get started"],
   ["tour", "Tour"],
@@ -38,16 +39,16 @@ const reference: Section[] = [
   ["lib", "Standard library"],
   ["tools", "Tools"],
 ];
-type Section = [dir: string, title: string];
 
 // Each area has a sidebar of its own, which lists the sections in it. The library is an area apart:
 // its main page lists the namespaces, and each namespace has its own sidebar.
-const areas: Section[][] = [
-  [learn[0], learn[1]],
-  [learn[2], learn[4], learn[5]],
-  [learn[3]],
-  [reference[0], reference[2]],
-];
+const areas = [["start", "tour"], ["guide", "coming-from", "design"], ["howto"], ["language", "tools"]];
+const sectionTitles = new Map([...learn, ...reference]);
+for (const [dir] of [...learn, ...reference]) {
+  if (dir !== "lib" && areas.flat().filter((d) => d === dir).length !== 1) {
+    throw new Error(`docs: section ${dir} must be in exactly one area`);
+  }
+}
 
 // The namespaces of the library by job, until lib/index.md groups them. A namespace not named here
 // is listed under Other.
@@ -72,7 +73,7 @@ export function syncDocs(from: string, to: string): DocsNav {
   for (const file of fs.readdirSync(from, { recursive: true, encoding: "utf8" })) {
     if (!file.endsWith(".md") || file === "README.md") continue;
     const markdown = fs.readFileSync(path.join(from, file), "utf8");
-    const status = /^<!-- status: (\w+) -->/.exec(markdown)?.[1];
+    const status = /^\uFEFF?\s*<!-- status: (\w+) -->/.exec(markdown)?.[1];
     if (status === "skeleton" && !markdown.includes("<!-- generated from ")) continue;
     const name = file.split(path.sep).join("/");
     pages.set(name, { file: name, title: /^# (.+)$/m.exec(markdown)?.[1] ?? name, markdown });
@@ -93,39 +94,50 @@ export function syncDocs(from: string, to: string): DocsNav {
 // render rewrites a page for the site, leaving the inside of code blocks as it is.
 function render(page: Page, pages: Map<string, Page>): string {
   const dir = path.posix.dirname(page.file);
-  const prose = (text: string) =>
-    text
-      .replace(/<!--[\s\S]*?-->\n?/g, "")
+  // Comments go and links change in prose only: a code span, such as `<!-- end generated -->`, is
+  // set aside first. Whichever starts first, a comment or a code span, takes the text it covers.
+  const prose = (text: string) => {
+    const spans: string[] = [];
+    return text
+      .replace(/<!--[\s\S]*?-->\n?|(?<!`)(`+)(?!`)(?:[^\n]|\n(?![ \t]*\n))*?(?<!`)\1(?!`)/g, (match, ticks) =>
+        ticks ? `\0${spans.push(match) - 1}\0` : "",
+      )
       .replace(/(!?)\[((?:[^\][]|\[[^\]]*\])*)\]\(([^)\s]+)\)/g, (link, image, text, url) => {
         if (image || /^[a-z]+:|^\/|^#/.test(url)) return link;
         const target = path.posix.normalize(path.posix.join(dir, url.replace(/#.*/, "")));
         return pages.has(target) ? link : text;
       })
-      .replace(/\n{3,}/g, "\n\n");
+      .replace(/\n{3,}/g, "\n\n")
+      .replace(/\0(\d+)\0/g, (_, i) => spans[Number(i)]);
+  };
 
   let out = "";
   let text = "";
   let fence = ""; // the open fence's marker, such as ``` or ````
-  let named = false; // whether the open fence names a file, as ```ant [geo.ant] does
+  // The indent of the code group around the open fence, when the fence names a file; null otherwise.
+  let group: string | null = null;
+  const closeGroup = () => (group === null ? "" : `\n${group}:::\n`);
   for (const line of page.markdown.split(/(?<=\n)/)) {
     const marker = /^ {0,3}(`{3,}|~{3,})/.exec(line)?.[1];
     if (!fence && marker) {
       // A code group of one shows the file name of a named block as its tab.
-      named = /^[`~]+\w+ \[[^\]]+\]\s*$/.test(line);
-      out += prose(text) + (named ? "::: code-group\n\n" : "") + line.replace(/^( {0,3}[`~]+ant) signature\b/, "$1");
+      group = /^( {0,3})[`~]+\w+ \[[^\]]+\]\s*$/.exec(line)?.[1] ?? null;
+      out += prose(text) + (group === null ? "" : `${group}::: code-group\n\n`);
+      out += line.replace(/^( {0,3}[`~]+ant) signature\b/, "$1");
       text = "";
       fence = marker;
     } else if (fence) {
       out += line;
       if (marker && marker[0] === fence[0] && marker.length >= fence.length && !line.trim().slice(marker.length)) {
-        out += named ? "\n:::\n" : "";
+        out += closeGroup();
         fence = "";
       }
     } else {
       text += line;
     }
   }
-  out += prose(text);
+  // A fence left open runs to the end of the page, and so does its code group.
+  out += fence ? closeGroup() : prose(text);
   return out.replace(/^\n+/, "");
 }
 
@@ -138,9 +150,11 @@ function nav(pages: Map<string, Page>): DocsNav {
   const section = (dir: string, text: string): DefaultTheme.SidebarItem => {
     const files = under(dir);
     const direct = files.filter((file) => !file.slice(dir.length + 1).includes("/"));
-    const subdirs = [...new Set(files.map((file) => file.slice(dir.length + 1).split("/")))]
-      .filter((parts) => parts.length > 1)
-      .map((parts) => parts[0]);
+    const subdirs = new Set(
+      files
+        .map((file) => file.slice(dir.length + 1).split("/"))
+        .flatMap((parts) => (parts.length > 1 ? [parts[0]] : [])),
+    );
     return {
       text,
       link: pages.has(`${dir}/index.md`) ? link(`${dir}/index.md`) : undefined,
@@ -149,7 +163,7 @@ function nav(pages: Map<string, Page>): DocsNav {
           .filter((file) => !file.endsWith("/index.md"))
           .sort(byName)
           .map((file) => item(file)),
-        ...[...new Set(subdirs)]
+        ...[...subdirs]
           .sort(byName)
           .map((sub) => ({ ...section(`${dir}/${sub}`, title(`${dir}/${sub}`, pages)), collapsed: true })),
       ],
@@ -165,8 +179,8 @@ function nav(pages: Map<string, Page>): DocsNav {
 
   const sidebar: DefaultTheme.SidebarMulti = {};
   for (const area of areas) {
-    const groups = area.filter(([dir]) => under(dir).length > 0).map(([dir, text]) => section(dir, text));
-    for (const [dir] of area) sidebar[`/docs/${dir}/`] = groups;
+    const groups = area.filter((dir) => under(dir).length > 0).map((dir) => section(dir, sectionTitles.get(dir)!));
+    for (const dir of area) sidebar[`/docs/${dir}/`] = groups;
   }
   sidebar["/docs/"] = sidebar["/docs/start/"];
 
@@ -255,7 +269,11 @@ function libIndex(pages: Map<string, Page>): string {
     for (const ns of list) {
       const generated = /^# .*\n([\s\S]*?)<!-- end generated -->/m.exec(pages.get(`lib/${ns}/index.md`)!.markdown);
       const doc = generated?.[1].replace(/^```[\s\S]*?^```$/gm, "").trim();
-      const sentence = doc?.replace(/\s+/g, " ").match(/^.*?\.(?=\s|$)/)?.[0];
+      // The doc's links are relative to the namespace's directory.
+      const sentence = doc
+        ?.replace(/\s+/g, " ")
+        .match(/^.*?(?<!\b(?:e\.g|i\.e|etc|vs))\.(?=\s|$)/)?.[0]
+        .replace(/\]\((?![a-z]+:|\/|#)/g, `](${ns}/`);
       out += `- [${pages.get(`lib/${ns}/index.md`)!.title}](${ns}/index.md)${sentence ? `: ${sentence}` : ""}\n`;
     }
   }

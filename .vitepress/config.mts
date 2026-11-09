@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import { defineConfig } from "vitepress";
 import type { Plugin } from "vite";
@@ -13,6 +14,12 @@ import { syncDocs } from "./docs";
 // ANT_DOCS, and is copied into docs/ here on every build.
 const site = path.resolve(import.meta.dirname, "..");
 const docs = syncDocs(path.resolve(site, process.env.ANT_DOCS ?? "../ant/docs"), path.join(site, "docs"));
+// VitePress checks the links of Markdown pages, not those of the theme's components: check the docs
+// pages these link to here, so a page moved in ant fails the build instead of the footer.
+for (const page of ["start/install.md"]) {
+  if (!fs.existsSync(path.join(site, "docs", page)))
+    throw new Error(`docs: SiteFooter.vue links docs/${page}, which is gone`);
+}
 
 // Ant code blocks in Markdown (```ant) highlight with the editor grammar. Markup expressions
 // embed CSS in <style> and JavaScript in <script>, so those grammars load with it.
