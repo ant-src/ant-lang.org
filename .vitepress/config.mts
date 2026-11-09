@@ -12,7 +12,7 @@ import { syncDocs } from "./docs";
 // The documentation comes from docs/ of ant-src/ant, checked out beside this repository or named by
 // ANT_DOCS, and is copied into docs/ here on every build.
 const site = path.resolve(import.meta.dirname, "..");
-const docsSidebar = syncDocs(path.resolve(site, process.env.ANT_DOCS ?? "../ant/docs"), path.join(site, "docs"));
+const docs = syncDocs(path.resolve(site, process.env.ANT_DOCS ?? "../ant/docs"), path.join(site, "docs"));
 
 // Ant code blocks in Markdown (```ant) highlight with the editor grammar. Markup expressions
 // embed CSS in <style> and JavaScript in <script>, so those grammars load with it.
@@ -58,7 +58,7 @@ export default defineConfig({
   themeConfig: {
     logo: "/logo.png",
     nav: [
-      { text: "Docs", link: "/docs/start/install", activeMatch: "^/docs/" },
+      docs.menu,
       {
         text: "Editors",
         items: [
@@ -70,7 +70,7 @@ export default defineConfig({
       { text: "Playground", link: "/playground" },
       { text: "Specification", link: "https://github.com/ant-src/spec" },
     ],
-    sidebar: docsSidebar,
+    sidebar: docs.sidebar,
     editLink: {
       pattern: ({ filePath }) =>
         filePath.startsWith("docs/")
