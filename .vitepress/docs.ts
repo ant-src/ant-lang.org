@@ -22,7 +22,7 @@ type Page = { file: string; title: string; markdown: string };
 export type DocsNav = { sidebar: DefaultTheme.SidebarMulti; menu: DefaultTheme.NavItemWithChildren };
 
 // Pages sort by file name, except those named here, which come first, in this order.
-const first = ["start/install.md", "start/editors.md", "start/first-program.md"];
+const first = ["start/install.md", "start/first-program.md"];
 
 // The sections of docs/README.md, as the Docs menu lists them.
 type Section = [dir: string, title: string];
