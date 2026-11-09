@@ -1,3 +1,4 @@
+import path from "node:path";
 import { defineConfig } from "vitepress";
 import type { Plugin } from "vite";
 import type { LanguageRegistration } from "shiki";
@@ -6,6 +7,12 @@ import javascript from "shiki/langs/javascript.mjs";
 // A copy of syntaxes/ant.tmLanguage.json from ant-src/vscode-ant, the grammar every editor uses.
 import antGrammar from "./ant.tmLanguage.json" with { type: "json" };
 import { antDark, antLight } from "./ant-theme";
+import { syncDocs } from "./docs";
+
+// The documentation comes from docs/ of ant-src/ant, checked out beside this repository or named by
+// ANT_DOCS, and is copied into docs/ here on every build.
+const site = path.resolve(import.meta.dirname, "..");
+const docsSidebar = syncDocs(path.resolve(site, process.env.ANT_DOCS ?? "../ant/docs"), path.join(site, "docs"));
 
 // Ant code blocks in Markdown (```ant) highlight with the editor grammar. Markup expressions
 // embed CSS in <style> and JavaScript in <script>, so those grammars load with it.
@@ -51,7 +58,7 @@ export default defineConfig({
   themeConfig: {
     logo: "/logo.png",
     nav: [
-      { text: "Docs", link: "/docs/install" },
+      { text: "Docs", link: "/docs/start/install", activeMatch: "^/docs/" },
       {
         text: "Editors",
         items: [
@@ -63,8 +70,12 @@ export default defineConfig({
       { text: "Playground", link: "/playground" },
       { text: "Specification", link: "https://github.com/ant-src/spec" },
     ],
-    sidebar: {
-      "/docs/": [{ text: "Documentation", items: [{ text: "Install", link: "/docs/install" }] }],
+    sidebar: docsSidebar,
+    editLink: {
+      pattern: ({ filePath }) =>
+        filePath.startsWith("docs/")
+          ? `https://github.com/ant-src/ant/edit/master/${filePath}`
+          : `https://github.com/ant-src/ant-lang.org/edit/master/${filePath}`,
     },
     socialLinks: [{ icon: "github", link: "https://github.com/ant-src/ant" }],
   },

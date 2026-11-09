@@ -215,7 +215,7 @@ The code lens above a test runs it alone, and `:Ant test-nearest` runs the test 
 
 <p class="actions"><a class="button" href="https://github.com/ant-src/nvim-ant">Get it on GitHub</a></p>
 
-The plugin needs Neovim 0.11 or later, and nvim-dap for debugging. [Install](/docs/install) shows how to add it with lazy.nvim or as a package, and where `ant` comes from.
+The plugin needs Neovim 0.11 or later, and nvim-dap for debugging. [Install](/docs/start/install) shows how to add it with lazy.nvim or as a package, and where `ant` comes from.
 
 </section>
 

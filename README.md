@@ -14,6 +14,11 @@ npm run fmt         # oxfmt
 npm run lint        # oxlint
 ```
 
+The documentation under `/docs` is written and tested in [ant-src/ant](https://github.com/ant-src/ant/tree/master/docs),
+not here. Every build copies it into `docs/` (ignored by git) from `../ant/docs`, or from the
+directory `ANT_DOCS` names; `.vitepress/docs.ts` leaves out unwritten pages and builds the
+sidebar. CI builds with ant's master.
+
 The playground's examples live in `playground/examples/`, one directory each: `main.ant`, the
 modules it imports, and `stdin.txt` for its input. Add one to the list in
 `playground/examples.ts`.

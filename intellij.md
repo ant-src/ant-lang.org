@@ -202,7 +202,7 @@ Breakpoints with conditions and logged expressions, frames and variables, values
 
 <p class="actions"><a class="button" href="https://plugins.jetbrains.com/plugin/35684-ant-language">Install from the JetBrains Marketplace</a></p>
 
-The plugin needs IntelliJ IDEA 2025.3 or later. The source is [ant-src/intellij-ant](https://github.com/ant-src/intellij-ant), and the plugin needs `ant`, which [Install](/docs/install) explains.
+The plugin needs IntelliJ IDEA 2025.3 or later. The source is [ant-src/intellij-ant](https://github.com/ant-src/intellij-ant), and the plugin needs `ant`, which [Install](/docs/start/install) explains.
 
 </section>
 

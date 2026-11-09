@@ -13,7 +13,7 @@ const columns: Column[] = [
   {
     title: "Learn",
     links: [
-      { text: "Install", link: "/docs/install" },
+      { text: "Install", link: "/docs/start/install" },
       { text: "Playground", link: "/playground" },
       { text: "Specification", link: "https://github.com/ant-src/spec" },
     ],

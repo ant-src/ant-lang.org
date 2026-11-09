@@ -202,7 +202,7 @@ No `launch.json` needed: breakpoints, stepping, every goroutine's stack and vari
 
 <p class="actions"><a class="button" href="https://marketplace.visualstudio.com/items?itemName=ant-lang.ant-lang">Install from the Visual Studio Marketplace</a></p>
 
-The source is [ant-src/vscode-ant](https://github.com/ant-src/vscode-ant). The extension needs `ant`, which [Install](/docs/install) explains.
+The source is [ant-src/vscode-ant](https://github.com/ant-src/vscode-ant). The extension needs `ant`, which [Install](/docs/start/install) explains.
 
 </section>
 
