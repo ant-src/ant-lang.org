@@ -15,7 +15,6 @@ const columns: Column[] = [
     links: [
       { text: "Install", link: "/docs/start/install" },
       { text: "Playground", link: "/playground" },
-      { text: "Specification", link: "https://github.com/ant-src/spec" },
     ],
   },
   {

@@ -75,7 +75,6 @@ export default defineConfig({
         ],
       },
       { text: "Playground", link: "/playground" },
-      { text: "Specification", link: "https://github.com/ant-src/spec" },
     ],
     sidebar: docs.sidebar,
     editLink: {
