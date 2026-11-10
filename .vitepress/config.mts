@@ -47,6 +47,9 @@ export default defineConfig({
   title: "Ant",
   description: "Ant is a typed language with errors as values, pipes for data, and goroutines.",
   cleanUrls: true,
+  // The repository README is not a page of the site.
+  srcExclude: ["README.md"],
+  sitemap: { hostname: "https://ant-lang.org" },
   appearance: "dark",
   lastUpdated: false,
   markdown: { languages: [...css, ...javascript, ant], theme: { light: antLight, dark: antDark } },
