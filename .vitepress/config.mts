@@ -57,6 +57,12 @@ export default defineConfig({
     ["link", { rel: "icon", type: "image/png", href: "/favicon.png" }],
     ["meta", { name: "theme-color", content: "#7c3aed" }],
   ],
+  // GitHub Pages serves every page at /foo and /foo.html; the canonical link names the clean URL.
+  transformPageData(pageData) {
+    const href = `https://ant-lang.org/${pageData.relativePath}`.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
+    pageData.frontmatter.head ??= [];
+    pageData.frontmatter.head.push(["link", { rel: "canonical", href }]);
+  },
   // A darkOnly page is dark from its first paint, whatever the reader chose for the rest of the
   // site. The page's head tags come after VitePress's own appearance script, so this one wins.
   // The dev server renders pages in the browser only, where theme/index.ts sets the same classes
