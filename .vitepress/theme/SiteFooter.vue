@@ -52,6 +52,7 @@ const columns = computed((): Column[] => [
     title: "Project",
     links: [
       { text: "Ask a question", link: "https://github.com/ant-src/ant/discussions" },
+      { text: "Reddit", link: "https://www.reddit.com/r/AntLang/" },
       { text: "Releases", link: "https://github.com/ant-src/ant/releases" },
     ],
   },
