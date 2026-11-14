@@ -13,7 +13,7 @@ interface Settings {
   theme: string;
   background: string;
   seed: number;
-  grain: boolean;
+  grain: number;
   padding: number;
   fontSize: number;
   lineNumbers: boolean;
@@ -39,7 +39,7 @@ const defaults: Settings = {
   theme: "ant-dark",
   background: "violet",
   seed: 7,
-  grain: true,
+  grain: 30,
   padding: 64,
   fontSize: 16,
   lineNumbers: false,
@@ -414,6 +414,7 @@ function sanitize() {
     Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : d;
   s.fontSize = clamp(s.fontSize, 12, 24, defaults.fontSize);
   s.padding = clamp(s.padding, 16, 160, defaults.padding);
+  s.grain = clamp(s.grain, 0, 100, defaults.grain);
   s.seed = clamp(s.seed, 0, 2 ** 31, defaults.seed);
   if (![1, 2, 4].includes(s.scale)) s.scale = defaults.scale;
   if (!themes.some((t) => t.id === s.theme)) s.theme = defaults.theme;
@@ -567,7 +568,12 @@ function onKey(e: KeyboardEvent) {
             @click="s.background = b.id"
           />
         </div>
-        <label class="check"><input v-model="s.grain" type="checkbox" /> Grain</label>
+        <label class="slider">
+          <span
+            >Grain <b>{{ s.grain }}</b></span
+          >
+          <input v-model.number="s.grain" type="range" min="0" max="100" step="5" />
+        </label>
       </section>
 
       <section class="group">

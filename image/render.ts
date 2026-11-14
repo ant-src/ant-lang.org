@@ -16,7 +16,8 @@ export interface Scene {
   command: string;
   background: Background;
   seed: number;
-  grain: boolean;
+  /** grain is how much noise lies over the background, from 0 (none) to 100. */
+  grain: number;
   padding: number;
   fontSize: number;
   lineNumbers: boolean;
@@ -135,7 +136,7 @@ export function draw(canvas: HTMLCanvasElement, s: Scene, scale: number): Layout
   const rand = mulberry32(s.seed);
   if (s.background.draw) {
     s.background.draw(ctx, l.width, l.height, rand);
-    if (s.grain) grain(ctx, canvas, scale);
+    if (s.grain > 0) grain(ctx, canvas, scale, s.grain);
   }
   drawWindow(ctx, s, l);
   return l;
@@ -270,7 +271,7 @@ function drawWindow(ctx: CanvasRenderingContext2D, s: Scene, l: Layout) {
 let noise: HTMLCanvasElement | undefined;
 
 /** grain lays fine noise over the background in device pixels, whatever the scale. */
-function grain(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, scale: number) {
+function grain(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, scale: number, amount: number) {
   if (!noise) {
     noise = document.createElement("canvas");
     noise.width = noise.height = 192;
@@ -287,7 +288,8 @@ function grain(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, scale: 
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.globalCompositeOperation = "overlay";
-  ctx.globalAlpha = 0.09;
+  // 100 is heavy film grain; the default, 30, a light texture.
+  ctx.globalAlpha = (amount / 100) * 0.6;
   ctx.fillStyle = ctx.createPattern(noise, "repeat")!;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.restore();
