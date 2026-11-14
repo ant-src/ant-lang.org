@@ -52,7 +52,18 @@ export default defineConfig({
   sitemap: { hostname: "https://ant-lang.org" },
   appearance: "dark",
   lastUpdated: false,
-  markdown: { languages: [...css, ...javascript, ant], theme: { light: antLight, dark: antDark } },
+  markdown: {
+    languages: [...css, ...javascript, ant],
+    theme: { light: antLight, dark: antDark },
+    config(md) {
+      // Inline examples may contain literal {{ and }}, as DAP logpoints do.
+      const inlineCode = md.renderer.rules.code_inline!;
+      md.renderer.rules.code_inline = (tokens, index, options, env, self) => {
+        tokens[index].attrSet("v-pre", "");
+        return inlineCode(tokens, index, options, env, self);
+      };
+    },
+  },
   head: [
     ["link", { rel: "icon", type: "image/png", href: "/favicon.png" }],
     ["meta", { name: "theme-color", content: "#7c3aed" }],
