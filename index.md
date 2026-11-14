@@ -27,7 +27,7 @@ A pipe passes the value on its left as the first argument on its right. A block 
 <div class="shot">
 
 ```ant
-var result = [5, 2, 8, 1]
+let result = [5, 2, 8, 1]
   | Array.filter({ x > 2 })
   | Array.map({ x * 10 })
   | Array.sort()
@@ -53,11 +53,11 @@ A function that can fail returns a `Result`. `try` hands an error up to the call
 
 ```ant
 func load(path: string): Result[Json.Value, Error] {
-  var text = try File.read(path)
+  let text = try File.read(path)
   Json.parse(text)
 }
 
-var config = load("config.json")
+let config = load("config.json")
 if config is Err { println(config.error.message) }
 ```
 
@@ -80,11 +80,11 @@ Goroutines are cheap, and any function can start one. `Parallel.map` runs a func
 
 ```ant
 func slowSquare(n: int, ctx: Context): int {
-  Time.sleep(Time.duration(milliseconds: 100), ctx)
+  Time.sleep(100ms, ctx)
   n * n
 }
 
-var squares = Parallel.map([1, 2, 3, 4], slowSquare, limit: 3)
+let squares = Parallel.map([1, 2, 3, 4], slowSquare, limit: 3)
 println(squares)
 ```
 
@@ -112,7 +112,7 @@ func link(post: Post): Html {
   <a href={post.url}>{post.title}</a>
 }
 
-var post = Post{ title: "Hello <world>", url: "/hello" }
+let post = Post{ title: "Hello <world>", url: "/hello" }
 println(<p>{link(post)}</p>)
 ```
 
