@@ -67,7 +67,7 @@ const formatError = ref("");
 const toast = ref("");
 const fonts = ref(false);
 let layoutNow: Layout | undefined;
-let ant: Ant | undefined;
+let antReady: Promise<Ant> | undefined;
 let runner: Runner | undefined;
 let runnerReady: Promise<void> | undefined;
 let runTimer: ReturnType<typeof setTimeout> | undefined;
@@ -76,6 +76,7 @@ let toastTimer: ReturnType<typeof setTimeout> | undefined;
 let runId = 0;
 let observer: ResizeObserver | undefined;
 let restored = false;
+let unmounted = false;
 
 const background = computed(() => backgrounds.find((b) => b.id === s.background) ?? backgrounds[0]);
 const ratio = computed(() => sizes.find((z) => z.id === s.size)?.ratio ?? 0);
@@ -130,7 +131,8 @@ watch(
   { immediate: true },
 );
 
-watch([tokens, output, s, fonts], render, { deep: true });
+// scene() reads everything the drawing uses, and not scale, which only the export uses.
+watch(() => fonts.value && scene(), render);
 
 function pick(e: MouseEvent) {
   if (!layoutNow || !canvasEl.value) return;
@@ -152,6 +154,8 @@ function ensureRunner(): Promise<void> {
   runnerReady ??= compileAnt().then(
     (module) =>
       new Promise<void>((resolve, reject) => {
+        // The page may have gone while ant.wasm compiled: start no worker nothing would end.
+        if (unmounted) return reject(new Error("the page is gone"));
         runner = new Runner(module, {
           ready: resolve,
           output: (stream, text) => onOutput(stream, text),
@@ -164,6 +168,12 @@ function ensureRunner(): Promise<void> {
         });
       }),
   );
+  // A load that failed, as on a network error, is tried again by the next run.
+  runnerReady.catch(() => {
+    runner?.dispose();
+    runner = undefined;
+    runnerReady = undefined;
+  });
   return runnerReady;
 }
 
@@ -227,7 +237,9 @@ async function run() {
   if (end === "cancelled") return;
   if (end === "timeout") {
     runner!.stop();
-    chunks.push({ stream: "stderr", text: `\nstopped after ${runTimeout / 1000}s` });
+    const last = chunks.at(-1)?.text ?? "";
+    const newline = last === "" || last.endsWith("\n") ? "" : "\n";
+    chunks.push({ stream: "stderr", text: `${newline}stopped after ${runTimeout / 1000}s` });
   }
   output.value = lines();
   running.value = false;
@@ -246,12 +258,13 @@ watch(
 
 // ---- format and check, on the page's own ant.wasm
 
-async function loadAntHere(): Promise<Ant> {
-  if (!ant) {
+function loadAntHere(): Promise<Ant> {
+  antReady ??= (async () => {
     const { loadAnt } = await import("@ant-lang/wasm");
-    ant = await loadAnt({ wasm: await compileAnt() });
-  }
-  return ant;
+    return loadAnt({ wasm: await compileAnt() });
+  })();
+  antReady.catch(() => (antReady = undefined));
+  return antReady;
 }
 
 async function format() {
@@ -330,11 +343,12 @@ function saved(): Saved {
 
 async function copyLink() {
   const url = `${location.origin}${location.pathname}#image=${await pack(saved())}`;
-  history.replaceState(null, "", url);
   try {
     await navigator.clipboard.writeText(url);
     say("Link copied");
   } catch {
+    // The next edit takes it out again (see the saving watcher), so a reload keeps the edits.
+    history.replaceState(null, "", url);
     say("Link in the address bar");
   }
 }
@@ -372,8 +386,24 @@ function apply(v: unknown) {
         (s as Record<string, unknown>)[key] = value;
       }
     }
-    s.highlight = s.highlight.filter((n) => Number.isInteger(n) && n >= 0);
+    sanitize();
   }
+}
+
+/** sanitize brings settings from a link or storage within what the controls can set. */
+function sanitize() {
+  const clamp = (n: number, lo: number, hi: number, d: number) =>
+    Number.isFinite(n) ? Math.min(hi, Math.max(lo, Math.round(n))) : d;
+  s.fontSize = clamp(s.fontSize, 12, 24, defaults.fontSize);
+  s.padding = clamp(s.padding, 16, 160, defaults.padding);
+  s.seed = clamp(s.seed, 0, 2 ** 31, defaults.seed);
+  if (![1, 2, 4].includes(s.scale)) s.scale = defaults.scale;
+  if (!themes.some((t) => t.id === s.theme)) s.theme = defaults.theme;
+  if (!backgrounds.some((b) => b.id === s.background)) s.background = defaults.background;
+  if (!sizes.some((z) => z.id === s.size)) s.size = defaults.size;
+  if (!["mac", "tab", "none"].includes(s.chrome)) s.chrome = defaults.chrome;
+  s.title = s.title.slice(0, 80);
+  s.highlight = s.highlight.filter((n) => Number.isInteger(n) && n >= 0 && n < 10000);
 }
 
 async function restore() {
@@ -388,6 +418,7 @@ async function restore() {
     try {
       apply(await unpack(image[1]));
     } catch {}
+    history.replaceState(null, "", location.pathname);
   } else if (play) {
     const snapshot = await decode(play[1]);
     if (snapshot) {
@@ -406,6 +437,7 @@ watch(
   [code, modules, stdin, s],
   () => {
     if (!restored) return;
+    if (location.hash.startsWith("#image=")) history.replaceState(null, "", location.pathname);
     try {
       localStorage.setItem(storageKey, JSON.stringify(saved()));
     } catch {}
@@ -418,18 +450,42 @@ onMounted(async () => {
   if (stageEl.value) observer.observe(stageEl.value);
   await restore();
   await fontsReady();
+  if (unmounted) return;
   fonts.value = true;
-  if (s.output) run();
-  check();
+  start();
+  window.addEventListener("hashchange", onHash);
 });
 
+// start runs and checks the restored code now, in place of the runs its watchers scheduled.
+function start() {
+  clearTimeout(runTimer);
+  clearTimeout(checkTimer);
+  if (s.output) run();
+  check();
+}
+
+// A link pasted into a tab already on the page arrives as a new fragment.
+async function onHash() {
+  if (!/^#(image|code)=/.test(location.hash)) return;
+  await restore();
+  start();
+}
+
 onBeforeUnmount(() => {
+  unmounted = true;
+  window.removeEventListener("hashchange", onHash);
+  cancelRun?.();
   observer?.disconnect();
   runner?.dispose();
   clearTimeout(runTimer);
   clearTimeout(checkTimer);
   clearTimeout(toastTimer);
 });
+
+/** where is a diagnostic as shown: main.ant's by line and column, another module's with its path. */
+function where(d: Diagnostic): string {
+  return `${d.path === "main.ant" ? "" : `${d.path}:`}${d.line}:${d.column}: ${d.message}`;
+}
 
 function onKey(e: KeyboardEvent) {
   // Tab indents in the code box instead of leaving it.
@@ -459,12 +515,8 @@ function onKey(e: KeyboardEvent) {
           @keydown="onKey"
         />
         <p v-if="formatError" class="problem">{{ formatError }}</p>
-        <p
-          v-else-if="diagnostics.length"
-          class="problem"
-          :title="diagnostics.map((d) => `${d.line}:${d.column}: ${d.message}`).join('\n')"
-        >
-          {{ diagnostics[0].line }}:{{ diagnostics[0].column }}: {{ diagnostics[0].message }}
+        <p v-else-if="diagnostics.length" class="problem" :title="diagnostics.map(where).join('\n')">
+          {{ where(diagnostics[0]) }}
           <span v-if="diagnostics.length > 1">(+{{ diagnostics.length - 1 }} more)</span>
         </p>
         <p v-else class="ok">
