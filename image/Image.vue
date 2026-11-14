@@ -612,6 +612,12 @@ function onKey(e: KeyboardEvent) {
           </button>
         </div>
       </section>
+
+      <section class="group">
+        <button type="button" class="button reset" title="Start over with the default code and settings" @click="reset">
+          Reset everything
+        </button>
+      </section>
     </aside>
 
     <main class="stage-wrap">
@@ -625,9 +631,6 @@ function onKey(e: KeyboardEvent) {
           >
         </span>
         <div class="actions">
-          <button type="button" class="button" title="Start over with the default code and settings" @click="reset">
-            Reset
-          </button>
           <div class="segmented small">
             <button v-for="n in [1, 2, 4]" :key="n" type="button" :class="{ on: s.scale === n }" @click="s.scale = n">
               {{ n }}×
@@ -915,6 +918,17 @@ h2 {
 
 .button:hover {
   border-color: var(--vp-c-brand-1);
+}
+
+.button.reset {
+  width: 100%;
+  padding: 7px 12px;
+  color: var(--vp-c-text-2);
+}
+
+.button.reset:hover {
+  border-color: var(--vp-c-danger-1);
+  color: var(--vp-c-danger-1);
 }
 
 .button.primary {
