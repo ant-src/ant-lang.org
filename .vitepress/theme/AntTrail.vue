@@ -5,9 +5,13 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 // down to an anthill at the bottom of the page. Ants leave the hill, walk up to a row, pick up a
 // crumb in that row's color, and carry it home, where it stays on the hill as a colored grain.
 // The hill is kept in this browser, so it grows from visit to visit. Everything is drawn on one
-// canvas the size of the window, fixed behind the rows. The rows are two columns from 960px up,
-// and the trail walks the gap between them; narrower screens have no gap to walk, so they get no
-// ants and no hill.
+// canvas behind the rows. The rows are two columns from 960px up, and the trail walks the gap
+// between them; narrower screens have no gap to walk, so they get no ants and no hill.
+//
+// The canvas is not fixed to the window: the browser scrolls the page off the main thread, and a
+// fixed canvas redrawn on the next frame trails behind the rows. It sits in the page instead, a
+// band a little taller than the window. Every frame centers the band on the window and draws in
+// page coordinates, so between frames the band scrolls with the rows.
 
 const colors = ["#2563eb", "#7c3aed", "#f43f5e", "#f59e0b"];
 // The hill in localStorage: { crumbs }, the latest crumbs carried home, which are the ones drawn.
@@ -15,6 +19,8 @@ const colors = ["#2563eb", "#7c3aed", "#f43f5e", "#f59e0b"];
 const storageKey = "ant-lang.org/hill";
 const maxCrumbs = 900;
 const saveDelay = 2000;
+// How far the band reaches past the window above and below, as a share of the window's height.
+const overscan = 0.25;
 
 const hillEl = ref<HTMLElement>();
 const canvasEl = ref<HTMLCanvasElement>();
@@ -36,6 +42,8 @@ type Ant = {
 let landing: HTMLElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
 let dpr = 1;
+let bandTop = 0;
+let bandHeight = 0;
 let pts: [number, number][] = [];
 let lens: number[] = [];
 let total = 0;
@@ -328,12 +336,20 @@ function drawAnt(
   c.restore();
 }
 
+// The band never reaches past the page, or the page would grow to hold it. Narrow screens hide
+// the canvas, so it keeps its pixels only while it is shown.
 function resizeCanvas() {
   const canvas = canvasEl.value;
-  if (!canvas) return;
+  if (!canvas || !landing || !wide?.matches) return;
   dpr = window.devicePixelRatio || 1;
-  canvas.width = Math.round(document.documentElement.clientWidth * dpr);
-  canvas.height = Math.round(window.innerHeight * dpr);
+  const width = landing.clientWidth;
+  bandHeight = Math.min(Math.round(window.innerHeight * (1 + 2 * overscan)), landing.clientHeight);
+  const w = Math.round(width * dpr);
+  const h = Math.round(bandHeight * dpr);
+  if (canvas.width !== w) canvas.width = w;
+  if (canvas.height !== h) canvas.height = h;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${bandHeight}px`;
 }
 
 // One frame. The ants walk on every frame while the page is wide enough to show them; with
@@ -350,11 +366,17 @@ function tick(now: number) {
   const canvas = canvasEl.value;
   if (!ctx || !canvas || !landing || total === 0 || !wide?.matches) return;
   const r = landing.getBoundingClientRect();
-  const top = -r.top - 20;
-  const bottom = window.innerHeight - r.top + 20;
+  const view = -r.top - (bandHeight - window.innerHeight) / 2;
+  const next = Math.round(Math.max(0, Math.min(landing.clientHeight - bandHeight, view)));
+  if (next !== bandTop) {
+    bandTop = next;
+    canvas.style.transform = `translateY(${bandTop}px)`;
+  }
+  const top = bandTop - 20;
+  const bottom = bandTop + bandHeight + 20;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.setTransform(dpr, 0, 0, dpr, r.left * dpr, r.top * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, -bandTop * dpr);
 
   if (ground && groundY < bottom && groundY + hill.h + 20 > top) {
     ctx.drawImage(ground, groundX, groundY, ground.width / dpr, ground.height / dpr);
@@ -437,6 +459,7 @@ onMounted(() => {
   load();
   onWide();
   observer = new ResizeObserver(() => {
+    resizeCanvas();
     layout();
     schedule();
   });
@@ -472,13 +495,13 @@ onBeforeUnmount(() => {
   margin-top: 72px;
 }
 
-/* Behind the rows: .landing isolates, so -1 stays above the page's own background. */
+/* Behind the rows: .landing isolates, so -1 stays above the page's own background. The script
+   sizes the band and moves it down the page. */
 .trail {
-  position: fixed;
+  position: absolute;
   z-index: -1;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  top: 0;
+  left: 0;
   pointer-events: none;
 }
 
