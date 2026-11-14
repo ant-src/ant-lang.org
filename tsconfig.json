@@ -17,6 +17,8 @@
     ".vitepress/**/*.mts",
     ".vitepress/**/*.vue",
     "playground/**/*.ts",
-    "playground/**/*.vue"
+    "playground/**/*.vue",
+    "image/**/*.ts",
+    "image/**/*.vue"
   ]
 }

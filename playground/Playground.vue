@@ -305,6 +305,11 @@ async function format() {
   await editor?.getAction("editor.action.formatDocument")?.run();
 }
 
+// image opens the image page with this code, which draws it and its output for sharing.
+async function image() {
+  location.href = `/image#code=${await encode(snapshot())}`;
+}
+
 async function share() {
   const code = await encode(snapshot());
   const url = `${location.origin}${location.pathname}#code=${code}`;
@@ -564,6 +569,7 @@ onBeforeUnmount(() => {
           }}
         </span>
         <button type="button" class="button" :title="`Format (${mod1}+S)`" @click="format">Format</button>
+        <button type="button" class="button" title="Make an image of this code" @click="image">Image</button>
         <button type="button" class="button" title="Copy a link to this code" @click="share">Share</button>
         <!-- One button that keeps its size, so the toolbar does not move as a run starts and ends. -->
         <button
