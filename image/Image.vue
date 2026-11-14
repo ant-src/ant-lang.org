@@ -51,7 +51,8 @@ const defaults: Settings = {
   highlight: [],
 };
 
-const code = ref(examples.find((e) => e.id === "pipes")?.files["main.ant"].trimEnd() ?? 'println("Hello, world")');
+const defaultCode = examples.find((e) => e.id === "pipes")?.files["main.ant"].trimEnd() ?? 'println("Hello, world")';
+const code = ref(defaultCode);
 // The other modules and the input of code opened from the playground: not drawn, but run.
 const modules = ref<Record<string, string>>({});
 const stdin = ref("");
@@ -357,6 +358,23 @@ async function openPlayground() {
   location.href = `/playground#code=${await encode({ files: { ...modules.value, "main.ant": code.value }, stdin: stdin.value })}`;
 }
 
+// reset starts over with the default code and settings, in place of what this browser kept.
+function reset() {
+  const changed =
+    JSON.stringify(saved()) !== JSON.stringify({ code: defaultCode, modules: {}, stdin: "", settings: defaults });
+  if (changed && !confirm("Reset the code and every setting?")) return;
+  code.value = defaultCode;
+  modules.value = {};
+  stdin.value = "";
+  Object.assign(s, { ...defaults, highlight: [] });
+  formatError.value = "";
+  history.replaceState(null, "", location.pathname);
+  try {
+    localStorage.removeItem(storageKey);
+  } catch {}
+  say("Reset");
+}
+
 function shuffle() {
   s.seed = Math.floor(Math.random() * 1e9);
 }
@@ -607,6 +625,9 @@ function onKey(e: KeyboardEvent) {
           >
         </span>
         <div class="actions">
+          <button type="button" class="button" title="Start over with the default code and settings" @click="reset">
+            Reset
+          </button>
           <div class="segmented small">
             <button v-for="n in [1, 2, 4]" :key="n" type="button" :class="{ on: s.scale === n }" @click="s.scale = n">
               {{ n }}×
