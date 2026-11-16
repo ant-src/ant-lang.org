@@ -104,7 +104,19 @@ export default defineConfig({
           ? `https://github.com/ant-src/ant/edit/master/${filePath}`
           : `https://github.com/ant-src/ant-lang.org/edit/master/${filePath}`,
     },
-    search: { provider: "local" },
+    search: {
+      provider: "local",
+      options: {
+        _render(src, env, md) {
+          // Read search comments from rendered HTML so code examples cannot opt a page in or out.
+          // Reference docs are searchable by default; other pages need <!-- search: true -->.
+          const html = md.render(src, env);
+          const search = /<!-- search: (true|false) -->/.exec(html)?.[1];
+          if (search === "false") return "";
+          return search === "true" || /^docs\/(lib|language)\//.test(env.relativePath) ? html : "";
+        },
+      },
+    },
     socialLinks: [{ icon: "github", link: "https://github.com/ant-src/ant" }],
   },
   vite: {

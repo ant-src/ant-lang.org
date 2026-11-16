@@ -19,6 +19,16 @@ not here. Every build copies it into `docs/` (ignored by git) from `../ant/docs`
 directory `ANT_DOCS` names; `.vitepress/docs.ts` leaves out unwritten pages and builds the
 sidebar. CI builds with ant's master.
 
+Local search indexes only `docs/lib/` and `docs/language/` by default, including their subdirectories.
+To include any other page, add a comment near the top of its Markdown source, after its status comment if present:
+
+```html
+<!-- search: true -->
+```
+
+Use `<!-- search: false -->` to exclude a page, even within those two directories. For documentation pages,
+edit the source in `ant/docs/`; the copied `docs/` directory is replaced on every build.
+
 The playground's examples live in `playground/examples/`, one directory each: `main.ant`, the
 modules it imports, and `stdin.txt` for its input. Add one to the list in
 `playground/examples.ts`.

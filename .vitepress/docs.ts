@@ -4,8 +4,8 @@
 // - Pages still marked skeleton are left out, unless they hold the part generated from the prelude
 //   (the signature and doc comment of a library function or type), which is worth reading alone.
 //   A link to a page left out becomes plain text.
-// - HTML comments go: the status, the brief, the generated markers, and the test directives are for
-//   the people and the tests that write the pages, not for readers.
+// - HTML comments go, except search directives used by the site's index. The status, the brief,
+//   the generated markers, and the test directives are for authors and tests, not readers.
 // - Fence info that only the tests read is dropped: ```ant signature becomes ```ant. A named block,
 //   ```ant [geo.ant], becomes a code group of one, whose tab shows the file name.
 // - Until lib/index.md is written, a list of the namespaces stands in for it.
@@ -94,14 +94,15 @@ export function syncDocs(from: string, to: string): DocsNav {
 // render rewrites a page for the site, leaving the inside of code blocks as it is.
 function render(page: Page, pages: Map<string, Page>): string {
   const dir = path.posix.dirname(page.file);
-  // Comments go and links change in prose only: a code span, such as `<!-- end generated -->`, is
-  // set aside first. Whichever starts first, a comment or a code span, takes the text it covers.
+  // Non-search comments go and links change in prose only: a code span, such as
+  // `<!-- end generated -->`, is set aside first. The first comment or span takes the text it covers.
   const prose = (text: string) => {
     const spans: string[] = [];
     return text
-      .replace(/<!--[\s\S]*?-->\n?|(?<!`)(`+)(?!`)(?:[^\n]|\n(?![ \t]*\n))*?(?<!`)\1(?!`)/g, (match, ticks) =>
-        ticks ? `\0${spans.push(match) - 1}\0` : "",
-      )
+      .replace(/<!--[\s\S]*?-->\n?|(?<!`)(`+)(?!`)(?:[^\n]|\n(?![ \t]*\n))*?(?<!`)\1(?!`)/g, (match, ticks) => {
+        if (ticks) return `\0${spans.push(match) - 1}\0`;
+        return /^<!-- search: (true|false) -->\n?$/.test(match) ? match : "";
+      })
       .replace(/(!?)\[((?:[^\][]|\[[^\]]*\])*)\]\(([^)\s]+)\)/g, (link, image, text, url) => {
         if (image || /^[a-z]+:|^\/|^#/.test(url)) return link;
         const target = path.posix.normalize(path.posix.join(dir, url.replace(/#.*/, "")));
