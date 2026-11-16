@@ -113,7 +113,10 @@ export default defineConfig({
           const html = md.render(src, env);
           const search = /<!-- search: (true|false) -->/.exec(html)?.[1];
           if (search === "false") return "";
-          return search === "true" || /^docs\/(lib|language)\//.test(env.relativePath) ? html : "";
+          if (search !== "true" && !/^docs\/(lib|language)\//.test(env.relativePath)) return "";
+          // VitePress splits search results at headings. Keep only the page title as a boundary,
+          // retaining subsection text in that result. This HTML is used only for the search index.
+          return html.replace(/<h([2-6])\b[^>]*>([\s\S]*?)<\/h\1>/gi, "<p>$2</p>");
         },
       },
     },
