@@ -25,9 +25,7 @@ const columns = computed((): Column[] => [
   {
     title: "Learn",
     links: [
-      { text: "Install", link: install },
       ...docsGroup("Learn").filter((item) => item.link !== install),
-      { text: "Playground", link: "/playground" },
     ],
   },
   { title: "Reference", links: docsGroup("Reference") },
