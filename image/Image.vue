@@ -279,10 +279,13 @@ async function format() {
 
 async function check() {
   try {
-    diagnostics.value = (await loadAntHere()).check({
-      files: { ...modules.value, "main.ant": code.value },
-      path: "main.ant",
-    });
+    // A warning, such as an unused variable, does not make the code a problem to show.
+    diagnostics.value = (await loadAntHere())
+      .check({
+        files: { ...modules.value, "main.ant": code.value },
+        path: "main.ant",
+      })
+      .filter((d) => (d as { severity?: string }).severity !== "warning");
   } catch {
     diagnostics.value = [];
   }
