@@ -24,9 +24,7 @@ const install = "/docs/start/install";
 const columns = computed((): Column[] => [
   {
     title: "Learn",
-    links: [
-      ...docsGroup("Learn").filter((item) => item.link !== install),
-    ],
+    links: docsGroup("Learn").filter((item) => item.link !== install),
   },
   { title: "Reference", links: docsGroup("Reference") },
   {
