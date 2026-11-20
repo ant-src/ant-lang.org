@@ -61,6 +61,23 @@
     Write-Host "Added $dir to your PATH"
   }
   if (($env:Path -split ';') -notcontains $dir) {
-    $env:Path = "$env:Path;$dir"
+    $env:Path = "$dir;$env:Path"
+  }
+
+  # New terminals search the system PATH before the user's, so an ant there, such as Apache Ant,
+  # runs instead of this one.
+  $first = $null
+  $dirs = ([Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' +
+    [Environment]::GetEnvironmentVariable('Path', 'User')) -split ';' | Where-Object { $_ }
+  foreach ($d in $dirs) {
+    foreach ($ext in $env:PATHEXT -split ';') {
+      $file = "$($d.TrimEnd('\'))\ant$ext"
+      if (!$first -and (Test-Path -LiteralPath $file -PathType Leaf -ErrorAction SilentlyContinue)) {
+        $first = $file
+      }
+    }
+  }
+  if ($first -and $first -ne $target) {
+    Write-Warning "New terminals run $first for 'ant': it comes first on PATH. Run $target, or remove the other one from PATH."
   }
 }

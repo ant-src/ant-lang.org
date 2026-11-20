@@ -36,9 +36,12 @@ jobs:
           path: .vitepress/dist
 
   # install.ps1 under PowerShell 7 and Windows PowerShell 5.1, read the way `irm | iex` runs it.
+  # The runner has Apache Ant on the system PATH, ahead of the user's: `ant` reaches ours only in
+  # the session the script ran in.
   install:
     runs-on: windows-latest
     strategy:
+      fail-fast: false
       matrix:
         shell: [pwsh, powershell]
     defaults:
