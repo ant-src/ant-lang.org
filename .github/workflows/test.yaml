@@ -15,29 +15,19 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # The documentation is ant's docs/, as of its master; .vitepress/docs.ts copies it in.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ant-src/ant
+          ref: master
+          path: .ant
+          sparse-checkout: docs
+          persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           package-manager-cache: false
       - run: npm ci
-      # The documentation is ant's docs/ as of the ant release the installed @ant-lang/wasm pins in
-      # its "ant" field, so the docs describe the interpreter the playground runs.
-      # .vitepress/docs.ts copies it in.
-      - name: ant ref
-        id: ant
-        run: |
-          ref=$(jq -r .ant node_modules/@ant-lang/wasm/package.json)
-          case $ref in
-            v[0-9]*.[0-9]*.[0-9]*) echo "ref=$ref" >> "$GITHUB_OUTPUT" ;;
-            *) echo "@ant-lang/wasm pins ant $ref, not a release tag" >&2; exit 1 ;;
-          esac
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: ant-src/ant
-          ref: ${{ steps.ant.outputs.ref }}
-          path: .ant
-          sparse-checkout: docs
-          persist-credentials: false
       - run: npm run build
         env:
           ANT_DOCS: .ant/docs

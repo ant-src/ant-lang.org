@@ -17,8 +17,7 @@ npm run lint        # oxlint
 The documentation under `/docs` is written and tested in [ant-src/ant](https://github.com/ant-src/ant/tree/master/docs),
 not here. Every build copies it into `docs/` (ignored by git) from `../ant/docs`, or from the
 directory `ANT_DOCS` names; `.vitepress/docs.ts` leaves out unwritten pages and builds the
-sidebar. CI builds with the ant release that `@ant-lang/wasm` pins in its `"ant"` field, so
-the docs update when the site moves to a new `@ant-lang/*` version.
+sidebar. CI builds with ant's master.
 
 Local search indexes only `docs/lib/` and `docs/language/` by default, including their subdirectories.
 Each page appears as one result under its title; subsection text is searchable within that result.
