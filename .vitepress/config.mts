@@ -43,9 +43,11 @@ function oneAntWasm(): Plugin {
   };
 }
 
+const description = "Ant is a typed language with errors as values, pipes for data, and goroutines.";
+
 export default defineConfig({
   title: "Ant",
-  description: "Ant is a typed language with errors as values, pipes for data, and goroutines.",
+  description,
   cleanUrls: true,
   // The repository README is not a page of the site.
   srcExclude: ["README.md"],
@@ -67,12 +69,24 @@ export default defineConfig({
   head: [
     ["link", { rel: "icon", type: "image/png", href: "/favicon.png" }],
     ["meta", { name: "theme-color", content: "#7c3aed" }],
+    ["meta", { property: "og:site_name", content: "Ant" }],
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:image", content: "https://ant-lang.org/og.png" }],
+    ["meta", { property: "og:image:width", content: "1200" }],
+    ["meta", { property: "og:image:height", content: "630" }],
+    ["meta", { property: "og:image:alt", content: "The Ant logo, a colorful ant, beside the word Ant" }],
+    ["meta", { name: "twitter:card", content: "summary_large_image" }],
   ],
   // GitHub Pages serves every page at /foo and /foo.html; the canonical link names the clean URL.
   transformPageData(pageData) {
     const href = `https://ant-lang.org/${pageData.relativePath}`.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
     pageData.frontmatter.head ??= [];
-    pageData.frontmatter.head.push(["link", { rel: "canonical", href }]);
+    pageData.frontmatter.head.push(
+      ["link", { rel: "canonical", href }],
+      ["meta", { property: "og:url", content: href }],
+      ["meta", { property: "og:title", content: pageData.title || "Ant" }],
+      ["meta", { property: "og:description", content: pageData.description || description }],
+    );
   },
   // A darkOnly page is dark from its first paint, whatever the reader chose for the rest of the
   // site. The page's head tags come after VitePress's own appearance script, so this one wins.
