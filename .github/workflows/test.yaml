@@ -44,3 +44,31 @@ jobs:
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: .vitepress/dist
+
+  # install.ps1 under PowerShell 7 and Windows PowerShell 5.1, read the way `irm | iex` runs it.
+  install:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        shell: [pwsh, powershell]
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: latest
+        run: |
+          Get-Content -Raw public/install.ps1 | Invoke-Expression
+          ant version
+      - name: pinned version, PATH entry added once
+        env:
+          ANT_VERSION: v0.1.0
+        run: |
+          Get-Content -Raw public/install.ps1 | Invoke-Expression
+          $out = ant version
+          if ($out -ne 'ant v0.1.0') { throw "ant version printed: $out" }
+          $dir = Join-Path $HOME 'bin'
+          $entries = (Get-ItemProperty HKCU:\Environment).Path -split ';' | Where-Object { $_ -eq $dir }
+          if (@($entries).Count -ne 1) { throw "$dir is in the user PATH $(@($entries).Count) times" }
