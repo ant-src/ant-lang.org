@@ -1,17 +1,15 @@
-// The examples are the directories under examples/: each holds main.ant, any modules it
-// imports, and optionally stdin.txt, the program's input.
+// The examples are the directories under examples/: each holds main.ant, one program in one file.
 
 export interface Example {
   id: string;
   title: string;
-  files: Record<string, string>;
-  stdin: string;
+  code: string;
 }
 
 const titles: [id: string, title: string][] = [
   ["hello", "Hello, world"],
   ["pipes", "Pipes and lambdas"],
-  ["shapes", "Unions and modules"],
+  ["shapes", "Unions"],
   ["errors", "Errors as values"],
   ["nulls", "Nothing undefined"],
   ["goroutines", "Goroutines and channels"],
@@ -19,18 +17,10 @@ const titles: [id: string, title: string][] = [
   ["calculator", "A calculator"],
 ];
 
-const sources = import.meta.glob<string>("./examples/*/*.{ant,txt}", { query: "?raw", import: "default", eager: true });
+const sources = import.meta.glob<string>("./examples/*/main.ant", { query: "?raw", import: "default", eager: true });
 
-export const examples: Example[] = titles.map(([id, title]) => {
-  const files: Record<string, string> = {};
-  let stdin = "";
-  for (const [path, text] of Object.entries(sources)) {
-    const [, dir, name] = path.match(/^\.\/examples\/([^/]+)\/(.+)$/)!;
-    if (dir !== id) continue;
-    if (name === "stdin.txt") stdin = text;
-    else files[name] = text;
-  }
-  return { id, title, files, stdin };
-});
-
-export const defaultExample = examples[0];
+export const examples: Example[] = titles.map(([id, title]) => ({
+  id,
+  title,
+  code: sources[`./examples/${id}/main.ant`],
+}));

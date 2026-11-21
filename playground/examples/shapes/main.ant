@@ -1,7 +1,19 @@
-// Shape is a union of records, declared in shapes.ant.
+// Shape is a union of records.
 // `is` narrows it: inside the branch, s is a Circle.
 
-import "./shapes.ant" { area, describe, Circle, Rect, Shape }
+type Circle = { radius: float64 }
+type Rect = { width: float64, height: float64 }
+type Shape = Circle | Rect
+
+func area(s: Shape): float64 {
+  if s is Circle { Math.PI * s.radius * s.radius } else { s.width * s.height }
+}
+
+// describe names a shape and its area, rounded to two places.
+func describe(s: Shape): string {
+  var name = if s is Circle { "circle" } else { "rect" }
+  "${name}: ${Math.round(area(s) * 100.0) / 100.0}"
+}
 
 var shapes: Array[Shape] = [
   Circle{ radius: 1.5 },

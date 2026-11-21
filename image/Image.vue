@@ -51,7 +51,7 @@ const defaults: Settings = {
   highlight: [],
 };
 
-const defaultCode = examples.find((e) => e.id === "pipes")?.files["main.ant"].trimEnd() ?? 'println("Hello, world")';
+const defaultCode = examples.find((e) => e.id === "pipes")?.code.trimEnd() ?? 'println("Hello, world")';
 const code = ref(defaultCode);
 // The other modules and the input of code opened from the playground: not drawn, but run.
 const modules = ref<Record<string, string>>({});

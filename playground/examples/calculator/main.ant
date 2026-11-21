@@ -1,5 +1,5 @@
 // A calculator: a tokenizer, a parser into a union of records, and an evaluator.
-// Each line of the input below is an expression. Edit it, and Run.
+// Each string at the end is an expression. Edit them, and Run.
 
 type Num = { value: float64 }
 type Ident = { name: string }
@@ -149,9 +149,7 @@ func calculate(src: string, env: Map[string, float64]): string {
 }
 
 var env = Map{ pi: 3.141592653589793, e: 2.718281828459045 }
-var input = Os.stdin()
-var line = Result.unwrap(File.readLine(input))
-while line != null {
-  if String.trim(line) != "" { println(calculate(line, env)) }
-  line = Result.unwrap(File.readLine(input))
+var expressions = ["1 + 2 * pi", "(1 + 2) * pi", "-e / 0", "x + 1"]
+for src in expressions {
+  println(calculate(src, env))
 }

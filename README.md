@@ -30,8 +30,7 @@ To include any other page, add a comment near the top of its Markdown source, af
 Use `<!-- search: false -->` to exclude a page, even within those two directories. For documentation pages,
 edit the source in `ant/docs/`; the copied `docs/` directory is replaced on every build.
 
-The playground's examples live in `playground/examples/`, one directory each: `main.ant`, the
-modules it imports, and `stdin.txt` for its input. Add one to the list in
-`playground/examples.ts`.
+The playground's examples live in `playground/examples/`, one directory each, holding `main.ant`.
+Add one to the list in `playground/examples.ts`.
 
 Pushes to master deploy to GitHub Pages.
