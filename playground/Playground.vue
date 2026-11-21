@@ -63,6 +63,7 @@ const disposables: Monaco.IDisposable[] = [];
 
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform);
 const runKeys = isMac ? "⌘↵" : "Ctrl+Enter";
+const formatKeys = isMac ? "⌘S" : "Ctrl+S";
 const busy = computed(() => status.value === "running" || queued.value);
 
 // ---- the code
@@ -451,9 +452,10 @@ onBeforeUnmount(() => {
       <div ref="editorEl" class="editor" :style="{ height: `${editorHeight}px` }" />
 
       <div class="bar">
-        <button type="button" class="share" title="Copy a link to this code" @click="share">
+        <button type="button" class="quiet" title="Copy a link to this code" @click="share">
           {{ copied || "Copy link" }}
         </button>
+        <button type="button" class="quiet" :title="`Format the code (${formatKeys})`" @click="format">Format</button>
         <!-- One button that keeps its size, so the bar does not move as a run starts and ends. -->
         <button
           type="button"
@@ -539,20 +541,20 @@ onBeforeUnmount(() => {
 .bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
   padding: 10px 12px 10px 20px;
   border-top: 1px solid var(--border);
 }
 
-.share {
+.quiet {
   padding: 8px 0;
+  margin-right: 12px;
   font-size: 14px;
   font-weight: 500;
   color: var(--vp-c-text-2);
 }
 
-.share:hover {
+.quiet:hover {
   color: var(--vp-c-text-1);
 }
 
@@ -564,6 +566,7 @@ onBeforeUnmount(() => {
   gap: 8px;
   min-width: 120px;
   min-height: 40px;
+  margin-left: auto;
   padding: 0 18px;
   border: 1px solid var(--vp-button-brand-border);
   border-radius: 10px;
