@@ -1,11 +1,12 @@
-// The news: one Markdown file per post in news/, beside news/index.md, which lists them. A post's
-// frontmatter names its title, its date, a one-sentence summary, and for a release, the version:
+// The news: one Markdown file per post in news/, beside news/index.md, which lists them. There is a
+// post for each minor release, news/ant-X-Y.md (RELEASE.md, step 4), and none for a patch release.
+// A post's frontmatter names its title, its date, a one-sentence summary, and the version:
 //
 //   ---
-//   title: Tests run in WebAssembly
-//   date: 2026-11-21
-//   summary: The browser build runs tests and the debugger.
-//   version: 0.3.2
+//   title: Every error in one run
+//   date: 2026-11-20
+//   summary: ant check reports every error at once, and ant code navigates from the shell.
+//   version: 0.3.0
 //   ---
 //
 // The index (theme/NewsIndex.vue), the header and the older and newer links of a post
