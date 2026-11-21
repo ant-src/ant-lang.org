@@ -35,7 +35,7 @@ export async function decode(text: string): Promise<Snapshot | null> {
     for (const [path, src] of Object.entries(snapshot.files)) {
       if (typeof src === "string" && validPath(path)) files[path] = src;
     }
-    if (!files["main.ant"]) return null;
+    if (typeof files["main.ant"] !== "string") return null;
     return { files, stdin: typeof snapshot.stdin === "string" ? snapshot.stdin : "" };
   } catch {
     return null;

@@ -45,6 +45,7 @@ let runner: InstanceType<EditorModule["Runner"]> | undefined;
 // input: they are kept and run with the code, unseen, until the code is replaced.
 let modules: Record<string, string> = {};
 let stdin = "";
+let queuedAuto = false; // the queued run is the first visit's, which an edit calls off
 // pristine is the code as it was opened, so picking an example replaces it without asking;
 // any other code, restored or shared, is asked about.
 let pristine: string | null = null;
@@ -78,6 +79,12 @@ function snapshot(): Snapshot {
 
 function load(s: Snapshot) {
   const { monaco } = mod.value!;
+  // A run in progress, or one waiting for Ant, is of the code being replaced.
+  queued.value = false;
+  if (status.value === "running") {
+    restart();
+    status.value = "loading";
+  }
   for (const path of ["main.ant", ...Object.keys(modules)]) modelOf(path)?.dispose();
   const { "main.ant": main, ...rest } = s.files;
   modules = rest;
@@ -106,6 +113,8 @@ function open(text: string) {
 function changed() {
   // An edit makes the page the reader's own: a reload restores it from storage, not the link.
   own();
+  // The first visit's run of the starter is not wanted once the reader writes code of their own.
+  if (queuedAuto) queued.value = false;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(save, 300);
 }
@@ -139,6 +148,7 @@ function restore(): Snapshot | null {
 
 function pick(id: string) {
   exampleId.value = "";
+  if (!loaded) return;
   const example: Example | undefined = examples.find((e) => e.id === id);
   if (!example && id !== "clear") return;
   const mine = code() !== pristine && code().trim() !== "";
@@ -151,11 +161,13 @@ function pick(id: string) {
 
 // ---- running
 
-function run() {
+// run runs the code; auto says the page asked for the run, not the reader.
+function run(auto = false) {
   if (status.value === "failed") return;
   // Before Ant is ready, the run waits for it.
   if (!runner || status.value === "loading") {
     queued.value = true;
+    queuedAuto = auto;
     return;
   }
   if (status.value === "running") restart();
@@ -228,7 +240,7 @@ function note(text: string) {
 }
 
 // The output links positions such as main.ant:3:5 to the editor.
-const positionPattern = /\bmain\.ant:(\d+):(\d+)/g;
+const positionPattern = /(?<![\w\-/])main\.ant:(\d+):(\d+)/g;
 
 function segments(text: string): Part[] {
   const out: Part[] = [];
@@ -257,10 +269,14 @@ async function format() {
 
 // image opens the image page with this code, which draws it and its output for sharing.
 async function image() {
+  if (!loaded) return;
   location.href = `/image#code=${await encode(snapshot())}`;
 }
 
 async function share() {
+  if (!loaded) return;
+  clearTimeout(saveTimer);
+  save(); // the latest edit, before the link stops the saving
   const url = `${location.origin}${location.pathname}#code=${await encode(snapshot())}`;
   history.replaceState(null, "", url);
   fromHash = true;
@@ -345,7 +361,7 @@ onMounted(async () => {
   // Commit Mono is a web font: once it has loaded, Monaco measures its glyphs again, so the cursor
   // and selections line up with the text that swapped in.
   document.fonts.ready.then(() => monaco.editor.remeasureFonts());
-  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, run);
+  editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => run());
   editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, format);
   disposables.push(
     editor.onDidContentSizeChange(fit),
@@ -376,7 +392,7 @@ onMounted(async () => {
     load(saved);
   } else {
     open(starter);
-    run(); // a first visit shows what running looks like
+    run(true); // a first visit shows what running looks like
   }
   editor.focus();
 
