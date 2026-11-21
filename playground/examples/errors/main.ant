@@ -1,31 +1,40 @@
 // Errors are values. A function that can fail returns a Result,
-// and try returns early with its error.
+// try returns early with its error, and wrapErr says where it happened.
 
-type Order = { item: string, quantity: int }
+type Config = { host: string, port: int }
 
-func parseOrder(line: string): Result[Order, Error] {
-  var parts = String.split(line, ":")
-  if Array.length(parts) != 2 {
-    return Result.err(Error{ message: "expected \"item: quantity\", got \"${line}\"" })
+func parsePort(text: string): Result[int, Error] {
+  let port = text.toInt() ?? return Result.fail("\"${text}\" is not a number")
+  if port < 1 || port > 65535 {
+    return Result.fail("${port} is not a port")
   }
-  var quantity = String.toInt(String.trim(parts[1])) ?? return Result.err(Error{ message: "bad quantity in \"${line}\"" })
-  Result.ok(Order{ item: String.trim(parts[0]), quantity: quantity })
+  Result.ok(port)
 }
 
-func total(lines: Array[string]): Result[int, Error] {
-  var sum = 0
-  for line in lines {
-    var order = try parseOrder(line)
-    sum += order.quantity
+func parseConfig(text: string): Result[Config, Error] {
+  let config = Config{ host: "localhost", port: 8080 }
+  for { index, value } in text.lines().entries() {
+    let parts = value.split("=")
+    if parts.length() != 2 {
+      return Result.fail("line ${index + 1}: expected key=value")
+    }
+    let key = parts[0].trim()
+    if key == "host" {
+      config.host = parts[1].trim()
+    } else if key == "port" {
+      config.port = try (parsePort(parts[1].trim()) | Result.wrapErr("line ${index + 1}: port"))
+    } else {
+      return Result.fail("line ${index + 1}: unknown key ${key}")
+    }
   }
-  Result.ok(sum)
+  Result.ok(config)
 }
 
-for lines in [["apples: 3", "pears: 5"], ["apples: 3", "pears: five"]] {
-  var result = total(lines)
-  if result is Err {
-    println("error: ${result.error.message}")
+for text in ["host = ant-lang.org\nport = 443", "port = eighty", "port = 70000", "colour = red"] {
+  let config = parseConfig(text)
+  if config is Ok {
+    println("ok: ${config.value.host}:${config.value.port}")
   } else {
-    println("total: ${result.value}")
+    println("error: ${config.error.message}")
   }
 }

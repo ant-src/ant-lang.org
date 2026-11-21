@@ -1,19 +1,30 @@
 // A pipe passes the value on its left as the first argument on its right.
-// { x.age >= 40 } is a lambda; x is its parameter.
+// { x.paid } is a lambda; x is its parameter.
 
-type Person = { name: string, age: int }
+type Order = { customer: string, total: int, paid: bool }
+type Spend = { customer: string, orders: int, total: int }
 
-var people = [
-  Person{ name: "Ada", age: 36 },
-  Person{ name: "Linus", age: 28 },
-  Person{ name: "Grace", age: 45 },
-  Person{ name: "Alan", age: 41 },
+let orders = [
+  Order{ customer: "Ada", total: 120, paid: true },
+  Order{ customer: "Linus", total: 45, paid: true },
+  Order{ customer: "Ada", total: 80, paid: false },
+  Order{ customer: "Grace", total: 210, paid: true },
+  Order{ customer: "Linus", total: 60, paid: true },
+  Order{ customer: "Ada", total: 35, paid: true },
 ]
 
-var seniors = people
-  | Array.filter({ x.age >= 40 })
-  | Array.sortBy({ x.name })
-  | Array.map({ "${x.name} (${x.age})" })
+func spend(e: Entry[string, Array[Order]]): Spend {
+  Spend{ customer: e.key, orders: e.value.length(), total: e.value.map({ x.total }).sum() ?? 0 }
+}
 
-println(seniors)
-println("total age: ${Array.sum(Array.map(people, { x.age })) ?? 0}")
+// Paid orders, by customer, biggest spender first.
+let spenders = orders
+  | Array.filter({ x.paid })
+  | Array.groupBy({ x.customer })
+  | Map.entries()
+  | Array.map(spend)
+  | Array.sortBy({ -x.total })
+
+for s in spenders {
+  println("${s.customer.padEnd(6)} ${s.orders} paid, ${s.total} in all")
+}

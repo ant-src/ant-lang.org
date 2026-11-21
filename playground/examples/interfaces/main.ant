@@ -1,0 +1,43 @@
+// An interface names a set of functions. Any type that has them fits,
+// with nothing to declare.
+
+interface Discount {
+  label(d: Self): string
+  apply(d: Self, price: int): int
+}
+
+type PercentOff = { percent: int }
+
+func PercentOff.label(d: PercentOff): string { "${d.percent}% off" }
+func PercentOff.apply(d: PercentOff, price: int): int { price * (100 - d.percent) / 100 }
+
+type AmountOff = { amount: int }
+
+func AmountOff.label(d: AmountOff): string { "${d.amount} off" }
+func AmountOff.apply(d: AmountOff, price: int): int { Math.max(price - d.amount, 0) }
+
+type RoundDown = { to: int }
+
+func RoundDown.label(d: RoundDown): string { "rounded down to a multiple of ${d.to}" }
+func RoundDown.apply(d: RoundDown, price: int): int { price - price % d.to }
+
+// One array holds all three: each is a Discount.
+let discounts: Array[Discount] = [PercentOff{ percent: 20 }, AmountOff{ amount: 15 }, RoundDown{ to: 10 }]
+
+var price = 249
+println("price: ${price}")
+for d in discounts {
+  price = d.apply(price)
+  println("${d.label()}: ${price}")
+}
+
+// Built-in types fit interfaces too: a string and an array both have length.
+interface Sized {
+  length(s: Self): int
+}
+
+func longest(items: Array[Sized]): int {
+  items.map({ x.length() }).max() ?? 0
+}
+
+println(longest(["ant", "wasp", [1, 2, 3, 4, 5]]))

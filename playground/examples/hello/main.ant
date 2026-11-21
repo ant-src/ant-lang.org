@@ -1,8 +1,10 @@
 // Welcome to Ant. Press Run, or Ctrl+Enter (⌘+Enter on a Mac).
 // Hover a name to see its type; Ctrl+Space completes.
 
-var names = ["world", "Ant", "🐜"]
+let names = ["world", "Ant", "🐜"]
 
 for name in names {
   println("Hello, ${name}!")
 }
+
+println("That was ${names.length()} greetings.")

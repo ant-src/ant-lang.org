@@ -1,14 +1,23 @@
 // Strings are Unicode text, counted in what a reader sees.
 
-var family = "👨‍👩‍👧"
-println("${family} is ${len(String.graphemes(family))} character")
-println(String.graphemes("🇨🇭🇩🇪"))
-println(String.toUpper("straße"))
+let family = "👨‍👩‍👧"
+println("${family} is ${family.graphemes().length()} character, made of ${family.chars().length()} code points")
+println("🇨🇭🇩🇪".graphemes())
+println("straße".toUpper())
 
 // Dates are calendar dates: a month after August 31 is September 30.
-var date = Time.plainDate(2024, 8, 31)
+let date = Time.plainDate(2024, 8, 31)
 println(Time.add(date, Time.duration(months: 1)))
 
-var zone = Result.unwrap(Time.zone("Europe/Stockholm"))
-var meeting = Time.toZoned(Time.plainDateTime(Time.plainDate(2026, 3, 29), Time.plainTime(hour: 2, minute: 30)), zone)
-println("2:30 does not exist that night in Stockholm: ${meeting}")
+// A time in a zone is an exact moment, so it reads the same event anywhere.
+// 1h45m is a duration literal.
+let stockholm = Result.unwrap(Time.zone("Europe/Stockholm"))
+let tokyo = Result.unwrap(Time.zone("Asia/Tokyo"))
+let morning = Time.plainDateTime(Time.plainDate(2026, 11, 21), Time.plainTime(hour: 9))
+let end = Time.add(Time.toZoned(morning, stockholm), 1h45m)
+println("the talk ends at ${Time.toPlainTime(end)} in Stockholm")
+println("and at ${Time.toPlainTime(Time.withZone(end, tokyo))} in Tokyo")
+
+// A zone knows its own history: this night in Stockholm, 2:30 does not exist.
+let night = Time.plainDateTime(Time.plainDate(2026, 3, 29), Time.plainTime(hour: 2, minute: 30))
+println("2:30 becomes ${Time.toZoned(night, stockholm)}")

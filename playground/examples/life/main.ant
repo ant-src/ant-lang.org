@@ -1,0 +1,54 @@
+// Conway's Game of Life: a glider crossing a small board that wraps at its edges.
+
+let width = 12
+let height = 6
+
+type Board = Array[Array[bool]]
+
+func neighbors(board: Board, row: int, col: int): int {
+  var count = 0
+  for dr in [-1, 0, 1] {
+    for dc in [-1, 0, 1] {
+      if dr == 0 && dc == 0 { continue }
+      if board[(row + dr + height) % height][(col + dc + width) % width] { count += 1 }
+    }
+  }
+  count
+}
+
+// A live cell stays alive with two or three neighbors; a dead one wakes with three.
+func step(board: Board): Board {
+  let next: Board = []
+  for row in Iter.range(0, height) {
+    let cells: Array[bool] = []
+    for col in Iter.range(0, width) {
+      let n = neighbors(board, row, col)
+      cells.push(n == 3 || board[row][col] && n == 2)
+    }
+    next.push(cells)
+  }
+  next
+}
+
+func cell(alive: bool): string { if alive { "#" } else { "." } }
+
+func draw(board: Board): string {
+  let rows = board.map({ String.join(x.map(cell), "") })
+  String.join(rows, "\n")
+}
+
+var board: Board = [
+  ".#..........",
+  "..#.........",
+  "###.........",
+  "............",
+  "............",
+  "............",
+].map({ x.chars().map({ x == "#" }) })
+
+for generation in Iter.range(0, 5) {
+  println("generation ${generation * 4}")
+  println(draw(board))
+  println("")
+  for _ in Iter.range(0, 4) { board = step(board) }
+}

@@ -1,31 +1,36 @@
-// Shape is a union of records.
-// `is` narrows it: inside the branch, s is a Circle.
+// Shape is a union of records. `is` tells its members apart, and inside
+// the branch the checker knows which one it has.
 
 type Circle = { radius: float64 }
 type Rect = { width: float64, height: float64 }
-type Shape = Circle | Rect
+type Triangle = { base: float64, height: float64 }
+type Shape = Circle | Rect | Triangle
 
+// No final else: the three branches cover every Shape, and the checker knows it.
+// Add a member to Shape, and this function stops checking until you handle it.
 func area(s: Shape): float64 {
-  if s is Circle { Math.PI * s.radius * s.radius } else { s.width * s.height }
+  if s is Circle { Math.PI * s.radius * s.radius }
+  else if s is Rect { s.width * s.height }
+  else if s is Triangle { s.base * s.height / 2.0 }
 }
 
-// describe names a shape and its area, rounded to two places.
-func describe(s: Shape): string {
-  var name = if s is Circle { "circle" } else { "rect" }
-  "${name}: ${Math.round(area(s) * 100.0) / 100.0}"
+func name(s: Shape): string {
+  if s is Circle { "circle" } else if s is Rect { "rect" } else { "triangle" }
 }
 
-var shapes: Array[Shape] = [
+let shapes: Array[Shape] = [
   Circle{ radius: 1.5 },
   Rect{ width: 2.0, height: 3.0 },
+  Triangle{ base: 4.0, height: 5.0 },
   Circle{ radius: 0.5 },
 ]
 
 for s in shapes {
-  println(describe(s))
+  println("${name(s)}: ${Math.round(area(s) * 100.0) / 100.0}")
 }
 
-var largest = Array.sortBy(shapes, { -area(x) })[0]
-if largest is Circle {
-  println("the largest is a circle of radius ${largest.radius}")
+let largest = shapes.maxBy(area)
+if largest is Triangle {
+  println("the largest is a triangle with base ${largest.base}")
 }
+println("${shapes.countWhere({ x is Circle })} of them are circles")

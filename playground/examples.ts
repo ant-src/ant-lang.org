@@ -10,10 +10,14 @@ const titles: [id: string, title: string][] = [
   ["hello", "Hello, world"],
   ["pipes", "Pipes and lambdas"],
   ["shapes", "Unions"],
-  ["errors", "Errors as values"],
   ["nulls", "Nothing undefined"],
+  ["errors", "Errors as values"],
+  ["interfaces", "Interfaces"],
+  ["sequences", "Endless sequences"],
   ["goroutines", "Goroutines and channels"],
+  ["html", "HTML expressions"],
   ["text-and-time", "Text and time"],
+  ["life", "Game of Life"],
   ["calculator", "A calculator"],
 ];
 

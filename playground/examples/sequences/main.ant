@@ -1,0 +1,43 @@
+// A sequence hands out its elements one at a time, and may never end.
+// The loop that reads it decides how far to go.
+
+func naturals(from: int): Seq[int] {
+  func(yield: func(int): bool) {
+    var n = from
+    while yield(n) { n += 1 }
+  }
+}
+
+func isPrime(n: int): bool {
+  var d = 2
+  while d * d <= n {
+    if n % d == 0 { return false }
+    d += 1
+  }
+  n > 1
+}
+
+// Every prime there is. Building the chain runs nothing.
+let primes = naturals(2) | Iter.filter(isPrime)
+
+println(primes | Iter.take(12) | Iter.toArray())
+
+for p in primes {
+  if p > 1000 {
+    println("the first prime over 1000 is ${p}")
+    break
+  }
+}
+
+// The Collatz walk from n: halve an even number, triple an odd one and add 1.
+func collatz(start: int): Seq[int] {
+  func(yield: func(int): bool) {
+    var n = start
+    while yield(n) && n != 1 {
+      n = if n % 2 == 0 { n / 2 } else { 3 * n + 1 }
+    }
+  }
+}
+
+let walk = collatz(27).toArray()
+println("from 27 it takes ${walk.length() - 1} steps to reach 1, climbing to ${walk.max() ?? 0}")

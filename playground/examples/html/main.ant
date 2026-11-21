@@ -1,0 +1,35 @@
+// Markup is an expression. <li>...</li> is a value of type Html,
+// and a component is a function that returns one.
+
+type Item = { name: string, price: int, soldOut: bool }
+
+func row(item: Item): Html {
+  <li class={["item", if item.soldOut { "sold-out" }]}>
+    <b>{item.name}</b>
+    <span>{item.price} kr</span>
+  </li>
+}
+
+func menu(title: string, items: Array[Item]): Html {
+  <section>
+    <h1>{title}</h1>
+    {if items.length() == 0 {
+      <p>Closed today.</p>
+    } else {
+      <ul>{items.map(row)}</ul>
+    }}
+  </section>
+}
+
+let items = [
+  Item{ name: "Fika & kanelbulle", price: 65, soldOut: false },
+  Item{ name: "<Semla>", price: 55, soldOut: true },
+]
+
+// Text is escaped on the way out, so a name can never become a tag.
+println(menu("Café Myran", items))
+println(menu("Monday", []))
+
+// Html values compare by what they hold, which makes components easy to test.
+assert(row(items[1]) == <li class="item sold-out"><b>&lt;Semla&gt;</b> <span>55 kr</span></li>)
+println("the row is what we expected")

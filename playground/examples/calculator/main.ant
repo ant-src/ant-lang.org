@@ -12,32 +12,30 @@ type Neg = { operand: Expr }
 type Bin = { op: string, left: Expr, right: Expr }
 type Expr = Lit | Ref | Neg | Bin
 
-func isDigit(ch: string): bool { ch >= "0" && ch <= "9" || ch == "." }
-func isLetter(ch: string): bool { ch >= "a" && ch <= "z" || ch >= "A" && ch <= "Z" }
+func isNumberChar(ch: string): bool { ch.isDigit() || ch == "." }
 
 func tokenize(src: string): Result[Array[Token], Error] {
-  var tokens: Array[Token] = []
-  var chars = String.chars(src)
+  let tokens: Array[Token] = []
+  let chars = src.chars()
   var i = 0
-  while i < Array.length(chars) {
-    var ch = chars[i]
+  while i < chars.length() {
+    let ch = chars[i]
+    let start = i
     if ch == " " {
       i += 1
-    } else if isDigit(ch) {
-      var start = i
-      while i < Array.length(chars) && isDigit(chars[i]) { i += 1 }
-      var text = String.join(Array.slice(chars, start, i), "")
-      var n = String.toFloat(text) ?? return Result.err(Error{ message: "bad number ${text}" })
-      Array.push(tokens, Num{ value: n })
-    } else if isLetter(ch) {
-      var start = i
-      while i < Array.length(chars) && isLetter(chars[i]) { i += 1 }
-      Array.push(tokens, Ident{ name: String.join(Array.slice(chars, start, i), "") })
-    } else if String.contains("+-*/()", ch) {
-      Array.push(tokens, Punct{ text: ch })
+    } else if isNumberChar(ch) {
+      while i < chars.length() && isNumberChar(chars[i]) { i += 1 }
+      let text = String.join(chars.slice(start, i), "")
+      let value = text.toFloat() ?? return Result.fail("bad number ${text}")
+      tokens.push(Num{ value })
+    } else if ch.isLetter() {
+      while i < chars.length() && chars[i].isLetter() { i += 1 }
+      tokens.push(Ident{ name: String.join(chars.slice(start, i), "") })
+    } else if "+-*/()".contains(ch) {
+      tokens.push(Punct{ text: ch })
       i += 1
     } else {
-      return Result.err(Error{ message: "unexpected character ${ch} at ${i}" })
+      return Result.fail("unexpected character ${ch} at ${i}")
     }
   }
   Result.ok(tokens)
@@ -45,71 +43,66 @@ func tokenize(src: string): Result[Array[Token], Error] {
 
 type Parser = { tokens: Array[Token], pos: int }
 
-func Parser.peek(p: Parser): Token | null { Array.get(p.tokens, p.pos) }
+func Parser.peek(p: Parser): Token | null { p.tokens.get(p.pos) }
 
 func Parser.next(p: Parser): Token | null {
-  var t = Array.get(p.tokens, p.pos)
+  let token = p.peek()
   p.pos += 1
-  t
+  token
 }
 
-func Parser.atPunct(p: Parser, text: string): bool {
-  var t = Parser.peek(p)
-  t is Punct && t.text == text
+// accept takes the next token when it is one of the operators, and gives its text.
+func Parser.accept(p: Parser, operators: string): string | null {
+  let token = p.peek()
+  if token is Punct && operators.contains(token.text) {
+    p.pos += 1
+    return token.text
+  }
+  null
 }
 
 // expr := term (("+" | "-") term)*
 func Parser.expr(p: Parser): Result[Expr, Error] {
-  var left = try Parser.term(p)
-  while Parser.atPunct(p, "+") || Parser.atPunct(p, "-") {
-    var op = Parser.next(p)
-    if op is Punct {
-      left = Bin{ op: op.text, left: left, right: try Parser.term(p) }
-    }
+  var left = try p.term()
+  while true {
+    let op = p.accept("+-") ?? return Result.ok(left)
+    left = Bin{ op, left, right: try p.term() }
   }
-  Result.ok(left)
 }
 
 // term := unary (("*" | "/") unary)*
 func Parser.term(p: Parser): Result[Expr, Error] {
-  var left = try Parser.unary(p)
-  while Parser.atPunct(p, "*") || Parser.atPunct(p, "/") {
-    var op = Parser.next(p)
-    if op is Punct {
-      left = Bin{ op: op.text, left: left, right: try Parser.unary(p) }
-    }
+  var left = try p.unary()
+  while true {
+    let op = p.accept("*/") ?? return Result.ok(left)
+    left = Bin{ op, left, right: try p.unary() }
   }
-  Result.ok(left)
 }
 
 // unary := "-" unary | primary
 func Parser.unary(p: Parser): Result[Expr, Error] {
-  if Parser.atPunct(p, "-") {
-    _ = Parser.next(p)
-    return Result.ok(Neg{ operand: try Parser.unary(p) })
+  if p.accept("-") != null {
+    return Result.ok(Neg{ operand: try p.unary() })
   }
-  Parser.primary(p)
+  p.primary()
 }
 
 // primary := number | name | "(" expr ")"
 func Parser.primary(p: Parser): Result[Expr, Error] {
-  var t = Parser.next(p) ?? return Result.err(Error{ message: "unexpected end of input" })
-  if t is Num { return Result.ok(Lit{ value: t.value }) }
-  if t is Ident { return Result.ok(Ref{ name: t.name }) }
-  if t.text == "(" {
-    var inner = try Parser.expr(p)
-    if !Parser.atPunct(p, ")") { return Result.err(Error{ message: "expected )" }) }
-    _ = Parser.next(p)
-    return Result.ok(inner)
-  }
-  Result.err(Error{ message: "unexpected ${t.text}" })
+  let token = p.next() ?? return Result.fail("unexpected end of input")
+  if token is Num { return Result.ok(Lit{ value: token.value }) }
+  if token is Ident { return Result.ok(Ref{ name: token.name }) }
+  if token.text != "(" { return Result.fail("unexpected ${token.text}") }
+  let inner = try p.expr()
+  if p.accept(")") == null { return Result.fail("expected )") }
+  Result.ok(inner)
 }
 
 func parse(src: string): Result[Expr, Error] {
-  var p = Parser{ tokens: try tokenize(src), pos: 0 }
-  var e = try Parser.expr(p)
-  var rest = Parser.peek(p)
-  if rest != null { return Result.err(Error{ message: "unexpected ${show(rest)} after the expression" }) }
+  let p = Parser{ tokens: try tokenize(src), pos: 0 }
+  let e = try p.expr()
+  let rest = p.peek()
+  if rest != null { return Result.fail("unexpected ${show(rest)} after the expression") }
   Result.ok(e)
 }
 
@@ -120,16 +113,16 @@ func show(t: Token): string {
 func eval(e: Expr, env: Map[string, float64]): Result[float64, Error] {
   if e is Lit { return Result.ok(e.value) }
   if e is Ref {
-    var v = env[e.name] ?? return Result.err(Error{ message: "unknown variable ${e.name}" })
-    return Result.ok(v)
+    let value = env[e.name] ?? return Result.fail("unknown variable ${e.name}")
+    return Result.ok(value)
   }
   if e is Neg { return Result.ok(-(try eval(e.operand, env))) }
-  var l = try eval(e.left, env)
-  var r = try eval(e.right, env)
+  let l = try eval(e.left, env)
+  let r = try eval(e.right, env)
   if e.op == "+" { Result.ok(l + r) }
   else if e.op == "-" { Result.ok(l - r) }
   else if e.op == "*" { Result.ok(l * r) }
-  else if r == 0.0 { Result.err(Error{ message: "division by zero" }) }
+  else if r == 0.0 { Result.fail("division by zero") }
   else { Result.ok(l / r) }
 }
 
@@ -141,15 +134,14 @@ func format(e: Expr): string {
 }
 
 func calculate(src: string, env: Map[string, float64]): string {
-  var parsed = parse(src)
+  let parsed = parse(src)
   if parsed is Err { return "${src} => error: ${parsed.error.message}" }
-  var result = eval(parsed.value, env)
+  let result = eval(parsed.value, env)
   if result is Err { return "${format(parsed.value)} => error: ${result.error.message}" }
   "${format(parsed.value)} => ${result.value}"
 }
 
-var env = Map{ pi: 3.141592653589793, e: 2.718281828459045 }
-var expressions = ["1 + 2 * pi", "(1 + 2) * pi", "-e / 0", "x + 1"]
-for src in expressions {
+let env = Map{ pi: 3.141592653589793, e: 2.718281828459045 }
+for src in ["1 + 2 * pi", "(1 + 2) * pi", "-e / 0", "x + 1", "2 * (3 + 4", "7 % 2"] {
   println(calculate(src, env))
 }
