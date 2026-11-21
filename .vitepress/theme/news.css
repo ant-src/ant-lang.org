@@ -1,8 +1,8 @@
 /* The news, in the black of the landing pages and dark only like them.
 
-   The index (theme/NewsIndex.vue) is set in type alone: no panels, badges, or rules. Each year is a
-   large Newsreader numeral that stays in view beside its posts, each headline is Newsreader at its
-   display size with the version as an italic aside, and the summaries are Inter.
+   The index (theme/NewsIndex.vue) is one column of posts at the width of a post, set in type alone:
+   no panels, badges, or rules. Each post opens with the date line of a post's header, then its
+   headline in Newsreader at its display size and its summary in Inter.
 
    A post (theme/NewsPost.vue around the post's Markdown) is plain: Inter throughout, one column at
    reading width, its title, date, and summary above the text and links to the older and newer post
@@ -23,37 +23,24 @@
 /* The index */
 
 .news {
-  max-width: 1040px;
+  max-width: 728px;
   margin: 0 auto;
   padding: 96px 24px 160px;
   color: var(--news-ink);
 }
 
-.news .header-anchor {
-  display: none;
-}
-
-.news-head {
-  display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
-  gap: 0 64px;
-  align-items: baseline;
-}
-
 .news-head h1 {
-  grid-column: 2;
   margin: 0;
   font-family: var(--news-serif);
   font-variation-settings: "opsz" 72;
-  font-size: 88px;
+  font-size: 72px;
   font-weight: 400;
-  line-height: 0.95;
-  letter-spacing: -0.035em;
+  line-height: 1;
+  letter-spacing: -0.03em;
 }
 
 .news-head p {
-  grid-column: 2;
-  margin: 20px 0 0;
+  margin: 16px 0 0;
   font-size: 19px;
   line-height: 1.45;
   color: var(--news-ink-2);
@@ -72,72 +59,31 @@
   text-decoration-color: currentColor;
 }
 
-.news-year {
-  display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
-  gap: 24px 64px;
-  align-items: start;
-  margin-top: 112px;
-}
-
-.news-head + .news-year {
-  margin-top: 96px;
-}
-
-/* The year stays beside its posts as they scroll past. */
-.news-numeral {
-  position: sticky;
-  top: calc(var(--vp-nav-height) + 32px);
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-family: var(--news-serif);
-  font-variation-settings: "opsz" 72;
-  font-size: 76px;
-  font-weight: 400;
-  font-variant-numeric: lining-nums tabular-nums;
-  line-height: 0.85;
-  letter-spacing: -0.03em;
-  color: var(--news-ink-3);
-}
-
 .news-list {
   display: grid;
-  gap: 44px;
-  margin: 0;
+  gap: 56px;
+  margin: 80px 0 0;
   padding: 0;
   list-style: none;
 }
 
 .news-item {
-  display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: 20px;
-  align-items: baseline;
+  display: block;
   color: inherit;
   text-decoration: none;
 }
 
-.news-date {
-  font-size: 12px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--news-ink-3);
-  white-space: nowrap;
-}
-
-.news-text {
+.news-item .news-meta {
   display: block;
-  min-width: 0;
+  margin: 0;
 }
 
 .news-title {
   display: block;
+  margin-top: 12px;
   font-family: var(--news-serif);
   font-variation-settings: "opsz" 72;
-  font-size: 36px;
+  font-size: 38px;
   font-weight: 500;
   line-height: 1.08;
   letter-spacing: -0.02em;
@@ -149,19 +95,9 @@
   transition: text-decoration-color 0.2s;
 }
 
-/* The template's white space is the formatter's to change, so the gap is a margin. */
-.news-version {
-  margin-left: 0.28em;
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  color: var(--news-ink-3);
-}
-
 .news-summary {
   display: block;
-  max-width: 58ch;
-  margin-top: 10px;
+  margin-top: 12px;
   font-size: 17px;
   line-height: 1.5;
   color: var(--news-ink-2);
@@ -175,36 +111,6 @@
   outline: 2px solid var(--vp-c-brand-1);
   outline-offset: 8px;
   border-radius: 4px;
-}
-
-@media (max-width: 959px) {
-  .news {
-    padding-top: 64px;
-  }
-
-  .news-head,
-  .news-year {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .news-head h1,
-  .news-head p {
-    grid-column: 1;
-  }
-
-  .news-head h1 {
-    font-size: 64px;
-  }
-
-  .news-year,
-  .news-head + .news-year {
-    margin-top: 72px;
-  }
-
-  .news-numeral {
-    position: static;
-    font-size: 56px;
-  }
 }
 
 @media (max-width: 639px) {
@@ -221,16 +127,12 @@
   }
 
   .news-list {
-    gap: 36px;
-  }
-
-  .news-item {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 6px;
+    gap: 44px;
+    margin-top: 56px;
   }
 
   .news-title {
-    font-size: 28px;
+    font-size: 30px;
   }
 
   .news-summary {
