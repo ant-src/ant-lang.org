@@ -107,6 +107,7 @@ export default defineConfig({
           { text: "VS Code", link: "/vscode" },
           { text: "IntelliJ IDEA", link: "/intellij" },
           { text: "Neovim", link: "/nvim" },
+          { text: "Ant Editor", link: "https://editor.ant-lang.org" },
         ],
       },
       { text: "Playground", link: "/playground" },

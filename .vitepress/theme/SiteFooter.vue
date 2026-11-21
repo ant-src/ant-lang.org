@@ -20,11 +20,10 @@ const docsGroup = (title: string): Link[] => {
   return (group?.items ?? []).flatMap(({ text, link }) => (text && link ? [{ text, link }] : []));
 };
 
-const install = "/docs/start/install";
 const columns = computed((): Column[] => [
   {
     title: "Learn",
-    links: docsGroup("Learn").filter((item) => item.link !== install),
+    links: docsGroup("Learn").filter((item) => !["/docs/start/install", "/docs/howto"].some((x) => item.link.startsWith(x))),
   },
   { title: "Reference", links: docsGroup("Reference") },
   {
@@ -33,6 +32,7 @@ const columns = computed((): Column[] => [
       { text: "VS Code", link: "/vscode" },
       { text: "IntelliJ IDEA", link: "/intellij" },
       { text: "Neovim", link: "/nvim" },
+      { text: "Ant Editor", link: "https://editor.ant-lang.org" },
     ],
   },
   {
