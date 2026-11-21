@@ -255,6 +255,11 @@ async function format() {
   await editor?.getAction("editor.action.formatDocument")?.run();
 }
 
+// image opens the image page with this code, which draws it and its output for sharing.
+async function image() {
+  location.href = `/image#code=${await encode(snapshot())}`;
+}
+
 async function share() {
   const url = `${location.origin}${location.pathname}#code=${await encode(snapshot())}`;
   history.replaceState(null, "", url);
@@ -456,6 +461,7 @@ onBeforeUnmount(() => {
           {{ copied || "Copy link" }}
         </button>
         <button type="button" class="quiet" :title="`Format the code (${formatKeys})`" @click="format">Format</button>
+        <button type="button" class="quiet" title="Make an image of this code" @click="image">Image</button>
         <!-- One button that keeps its size, so the bar does not move as a run starts and ends. -->
         <button
           type="button"
