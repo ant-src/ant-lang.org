@@ -86,9 +86,9 @@ export function atomFeed(posts: Post[], site: string): string {
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Ant News</title>
   <subtitle>Releases and notes from the Ant project.</subtitle>
-  <link href="${site}/news"/>
+  <link href="${site}/news/"/>
   <link rel="self" href="${site}/feed.xml"/>
-  <id>${site}/news</id>
+  <id>${site}/news/</id>
   <icon>${site}/favicon.png</icon>
   <author><name>Anton Medvedev</name></author>
   <updated>${updated}</updated>

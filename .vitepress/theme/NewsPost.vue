@@ -21,7 +21,7 @@ const newer = computed(() => posts[index.value - 1]);
 
 <template>
   <header v-if="post && props.part === 'header'" class="news-post-header">
-    <a class="news-back" :href="withBase('/news')">News</a>
+    <a class="news-back" :href="withBase('/news/')">News</a>
     <p class="news-meta">
       <time :datetime="post.date">{{ formatDate(post.date, "long") }}</time
       ><template v-if="post.version"> · Ant {{ post.version }}</template>
