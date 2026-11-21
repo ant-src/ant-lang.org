@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { defineConfig } from "vitepress";
+import { createContentLoader, defineConfig } from "vitepress";
 import type { Plugin } from "vite";
 import type { LanguageRegistration } from "shiki";
 import css from "shiki/langs/css.mjs";
@@ -9,6 +9,7 @@ import javascript from "shiki/langs/javascript.mjs";
 import antGrammar from "./ant.tmLanguage.json" with { type: "json" };
 import { antDark, antLight } from "./ant-theme";
 import { syncDocs } from "./docs";
+import { atomFeed, newsGlob, toPosts } from "./news";
 
 // The documentation comes from docs/ of ant-src/ant, checked out beside this repository or named by
 // ANT_DOCS, and is copied into docs/ here on every build.
@@ -76,9 +77,26 @@ export default defineConfig({
     ["meta", { property: "og:image:height", content: "630" }],
     ["meta", { property: "og:image:alt", content: "The Ant logo, a colorful ant, beside the word Ant" }],
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
+    ["link", { rel: "alternate", type: "application/atom+xml", title: "Ant News", href: "/feed.xml" }],
   ],
   // GitHub Pages serves every page at /foo and /foo.html; the canonical link names the clean URL.
   transformPageData(pageData) {
+    // A news post is a plain column of text, dark like the news index, with its title, date, and
+    // summary from its frontmatter set above the text and its older and newer links below it
+    // (theme/NewsPost.vue). Its summary is the page's description.
+    if (/^news\/(?!index\.md$)[^/]+\.md$/.test(pageData.relativePath)) {
+      Object.assign(pageData.frontmatter, {
+        sidebar: false,
+        aside: false,
+        outline: false,
+        editLink: false,
+        prev: false,
+        next: false,
+        darkOnly: true,
+        ...pageData.frontmatter,
+      });
+      pageData.description ||= pageData.frontmatter.summary ?? "";
+    }
     const href = `https://ant-lang.org/${pageData.relativePath}`.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
     pageData.frontmatter.head ??= [];
     pageData.frontmatter.head.push(
@@ -110,6 +128,7 @@ export default defineConfig({
           { text: "Ant Editor", link: "https://editor.ant-lang.org" },
         ],
       },
+      { text: "News", link: "/news", activeMatch: "^/news" },
       { text: "Playground", link: "/playground" },
     ],
     sidebar: docs.sidebar,
@@ -136,6 +155,11 @@ export default defineConfig({
       },
     },
     socialLinks: [{ icon: "github", link: "https://github.com/ant-src/ant" }],
+  },
+  // The news feed, beside the pages. It names posts by their address on the live site.
+  async buildEnd({ outDir }) {
+    const posts = toPosts(await createContentLoader(newsGlob, { render: true }).load());
+    fs.writeFileSync(path.join(outDir, "feed.xml"), atomFeed(posts, "https://ant-lang.org"));
   },
   vite: {
     // The year in the footer's copyright (theme/SiteFooter.vue).

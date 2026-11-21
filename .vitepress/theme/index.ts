@@ -4,20 +4,33 @@ import DefaultTheme from "vitepress/theme";
 import { h, watchEffect } from "vue";
 import "@fontsource/commit-mono/400.css";
 import "@fontsource/commit-mono/400-italic.css";
+// Newsreader sets the headlines of the news index, with its optical sizes.
+import "@fontsource-variable/newsreader/opsz.css";
+import "@fontsource-variable/newsreader/opsz-italic.css";
 import "./custom.css";
 import "./landing.css";
+import "./news.css";
 import AntTrail from "./AntTrail.vue";
 import EditorShots from "./EditorShots.vue";
+import NewsIndex from "./NewsIndex.vue";
+import NewsPost from "./NewsPost.vue";
 import Preview from "./Preview.vue";
 import SiteFooter from "./SiteFooter.vue";
 
 export default {
   extends: DefaultTheme,
-  // The site's own footer takes the place of the default theme's, on every page.
-  Layout: () => h(DefaultTheme.Layout, null, { "layout-bottom": () => h(SiteFooter) }),
+  // The site's own footer takes the place of the default theme's, on every page. A news post gets
+  // its header and its older and newer links around its text.
+  Layout: () =>
+    h(DefaultTheme.Layout, null, {
+      "doc-before": () => h(NewsPost, { part: "header" }),
+      "doc-after": () => h(NewsPost, { part: "footer" }),
+      "layout-bottom": () => h(SiteFooter),
+    }),
   enhanceApp({ app }) {
     app.component("AntTrail", AntTrail);
     app.component("EditorShots", EditorShots);
+    app.component("NewsIndex", NewsIndex);
     app.component("Preview", Preview);
   },
   setup() {

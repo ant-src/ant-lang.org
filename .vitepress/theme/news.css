@@ -1,0 +1,396 @@
+/* The news, in the black of the landing pages and dark only like them.
+
+   The index (theme/NewsIndex.vue) is set in type alone: no panels, badges, or rules. Each year is a
+   large Newsreader numeral that stays in view beside its posts, each headline is Newsreader at its
+   display size with the version as an italic aside, and the summaries are Inter.
+
+   A post (theme/NewsPost.vue around the post's Markdown) is plain: Inter throughout, one column at
+   reading width, its title, date, and summary above the text and links to the older and newer post
+   below it. */
+
+:root:has(.news),
+:root:has(.news-post-header) {
+  --vp-c-bg: #000;
+  --vp-nav-bg-color: #000;
+  --news-ink: #f5f5f7;
+  --news-ink-2: #a1a1a6;
+  --news-ink-3: #6e6e73;
+  --news-line: rgba(255, 255, 255, 0.1);
+  --news-panel: #141416;
+  --news-serif: "Newsreader Variable", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+}
+
+/* The index */
+
+.news {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 96px 24px 160px;
+  color: var(--news-ink);
+}
+
+.news .header-anchor {
+  display: none;
+}
+
+.news-head {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 0 64px;
+  align-items: baseline;
+}
+
+.news-head h1 {
+  grid-column: 2;
+  margin: 0;
+  font-family: var(--news-serif);
+  font-variation-settings: "opsz" 72;
+  font-size: 88px;
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+}
+
+.news-head p {
+  grid-column: 2;
+  margin: 20px 0 0;
+  font-size: 19px;
+  line-height: 1.45;
+  color: var(--news-ink-2);
+}
+
+.news-head a {
+  color: var(--news-ink);
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.35);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color 0.2s;
+}
+
+.news-head a:hover {
+  text-decoration-color: currentColor;
+}
+
+.news-year {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 24px 64px;
+  align-items: start;
+  margin-top: 112px;
+}
+
+.news-head + .news-year {
+  margin-top: 96px;
+}
+
+/* The year stays beside its posts as they scroll past. */
+.news-numeral {
+  position: sticky;
+  top: calc(var(--vp-nav-height) + 32px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: var(--news-serif);
+  font-variation-settings: "opsz" 72;
+  font-size: 76px;
+  font-weight: 400;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 0.85;
+  letter-spacing: -0.03em;
+  color: var(--news-ink-3);
+}
+
+.news-list {
+  display: grid;
+  gap: 44px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.news-item {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 20px;
+  align-items: baseline;
+  color: inherit;
+  text-decoration: none;
+}
+
+.news-date {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--news-ink-3);
+  white-space: nowrap;
+}
+
+.news-text {
+  display: block;
+  min-width: 0;
+}
+
+.news-title {
+  display: block;
+  font-family: var(--news-serif);
+  font-variation-settings: "opsz" 72;
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+  transition: text-decoration-color 0.2s;
+}
+
+/* The template's white space is the formatter's to change, so the gap is a margin. */
+.news-version {
+  margin-left: 0.28em;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--news-ink-3);
+}
+
+.news-summary {
+  display: block;
+  max-width: 58ch;
+  margin-top: 10px;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--news-ink-2);
+}
+
+.news-item:hover .news-title {
+  text-decoration-color: rgba(255, 255, 255, 0.4);
+}
+
+.news-item:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 8px;
+  border-radius: 4px;
+}
+
+@media (max-width: 959px) {
+  .news {
+    padding-top: 64px;
+  }
+
+  .news-head,
+  .news-year {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .news-head h1,
+  .news-head p {
+    grid-column: 1;
+  }
+
+  .news-head h1 {
+    font-size: 64px;
+  }
+
+  .news-year,
+  .news-head + .news-year {
+    margin-top: 72px;
+  }
+
+  .news-numeral {
+    position: static;
+    font-size: 56px;
+  }
+}
+
+@media (max-width: 639px) {
+  .news {
+    padding: 48px 20px 112px;
+  }
+
+  .news-head h1 {
+    font-size: 52px;
+  }
+
+  .news-head p {
+    font-size: 17px;
+  }
+
+  .news-list {
+    gap: 36px;
+  }
+
+  .news-item {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .news-title {
+    font-size: 28px;
+  }
+
+  .news-summary {
+    font-size: 16px;
+  }
+}
+
+/* A post */
+
+.VPDoc:has(.news-post-header) .content-container {
+  max-width: 680px;
+}
+
+.VPDoc:has(.news-post-header) {
+  padding-top: 72px;
+  padding-bottom: 112px;
+}
+
+.news-post-header {
+  margin-bottom: 40px;
+}
+
+.news-back {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--news-ink-2);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.news-back::before {
+  content: "←";
+  margin-right: 6px;
+}
+
+.news-back:hover {
+  color: var(--news-ink);
+}
+
+.news-meta {
+  margin: 40px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--news-ink-3);
+}
+
+.news-post-header h1 {
+  margin: 14px 0 0;
+  font-size: 48px;
+  font-weight: 650;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
+  color: var(--news-ink);
+  text-wrap: balance;
+}
+
+.news-dek {
+  margin: 20px 0 0;
+  font-size: 21px;
+  line-height: 1.45;
+  color: var(--news-ink-2);
+  text-wrap: pretty;
+}
+
+/* The text: the docs' typography, with its headings set apart by space instead of a rule, and
+   code in the charcoal panels of the landing pages. */
+.VPDoc:has(.news-post-header) .vp-doc {
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.VPDoc:has(.news-post-header) .vp-doc h2 {
+  margin-top: 56px;
+  padding-top: 0;
+  border-top: 0;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+}
+
+.VPDoc:has(.news-post-header) .vp-doc div[class*="language-"] {
+  border-radius: 12px;
+  background: var(--news-panel);
+  box-shadow: inset 0 0 0 1px var(--news-line);
+}
+
+.news-post-nav {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 72px;
+  padding-top: 32px;
+  border-top: 1px solid var(--news-line);
+}
+
+.news-post-nav a {
+  display: block;
+  padding: 16px 20px;
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 1px var(--news-line);
+  font-size: 15px;
+  font-weight: 550;
+  line-height: 1.35;
+  color: var(--news-ink);
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.news-post-nav a:hover {
+  background: var(--news-panel);
+}
+
+.news-post-nav a span {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--news-ink-3);
+}
+
+.news-post-nav .older {
+  grid-column: 1;
+}
+
+.news-post-nav .newer {
+  grid-column: 2;
+  text-align: right;
+}
+
+@media (max-width: 639px) {
+  .VPDoc:has(.news-post-header) {
+    padding-top: 40px;
+  }
+
+  /* The docs run code to the screen's edges on phones; a post keeps its panels in the column. */
+  .VPDoc:has(.news-post-header) .vp-doc div[class*="language-"] {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .news-meta {
+    margin-top: 28px;
+  }
+
+  .news-post-header h1 {
+    font-size: 36px;
+  }
+
+  .news-dek {
+    font-size: 18px;
+  }
+
+  .news-post-nav {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .news-post-nav .older,
+  .news-post-nav .newer {
+    grid-column: 1;
+  }
+}
