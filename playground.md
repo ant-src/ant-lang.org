@@ -3,7 +3,6 @@ layout: page
 title: Playground
 sidebar: false
 aside: false
-footer: false
 ---
 
 <script setup lang="ts">

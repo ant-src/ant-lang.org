@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // The site's footer, after Apple's: a directory of link columns, then a line of fine print. On
 // narrow screens each column folds behind its heading, which opens and closes it. A page whose
-// frontmatter sets footer to false, the playground, has none.
+// frontmatter sets footer to false, the image page, has none.
 import { useData } from "vitepress";
 import { useSidebar } from "vitepress/theme";
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";

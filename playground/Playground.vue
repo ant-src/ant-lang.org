@@ -497,9 +497,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .playground {
   --border: var(--vp-c-divider);
-  min-height: calc(100vh - var(--vp-nav-height));
-  min-height: calc(100dvh - var(--vp-nav-height));
-  padding: 32px 16px;
+  padding: 32px 16px 48px;
   background: var(--vp-c-bg-alt);
 }
 
