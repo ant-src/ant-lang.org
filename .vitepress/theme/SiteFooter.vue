@@ -23,7 +23,9 @@ const docsGroup = (title: string): Link[] => {
 const columns = computed((): Column[] => [
   {
     title: "Learn",
-    links: docsGroup("Learn").filter((item) => !["/docs/start/install", "/docs/howto"].some((x) => item.link.startsWith(x))),
+    links: docsGroup("Learn").filter(
+      (item) => !["/docs/start/install", "/docs/howto"].some((x) => item.link.startsWith(x)),
+    ),
   },
   { title: "Reference", links: docsGroup("Reference") },
   {
