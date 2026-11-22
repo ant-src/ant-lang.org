@@ -126,7 +126,7 @@ println(<p>{link(post)}</p>)
 <section class="feature">
 <div class="text">
 
-## A type for every case.
+## Unions of records.
 
 A union lists the types a value can have. `is` tells which one it holds, and inside the branch its fields are there to use.
 
