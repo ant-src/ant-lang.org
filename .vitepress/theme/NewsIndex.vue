@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// The news index: the newest post first and largest, its date and version, its headline in
-// Newsreader, its summary, and the code that sums it up; then every older post as one row of its
-// date, version, and headline. The lead's text is one link to its post, and each row is one.
+// The news index: the newest post first and largest, its date and version, its headline, its
+// summary, and the code that sums it up; then every older post as one row of its date, version,
+// and headline. The lead's text is one link to its post, and each row is one.
 import { withBase } from "vitepress";
 import { formatDate } from "../news";
 import { data as posts } from "./news.data";

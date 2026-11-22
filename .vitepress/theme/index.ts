@@ -7,9 +7,6 @@ import "@fontsource/commit-mono/400-italic.css";
 // Bold, which terminal sessions use and code in a heading takes from the heading; the browser
 // fetches it only for a page that shows it.
 import "@fontsource/commit-mono/700.css";
-// Newsreader sets the headlines of the news index, with its optical sizes.
-import "@fontsource-variable/newsreader/opsz.css";
-import "@fontsource-variable/newsreader/opsz-italic.css";
 import "./custom.css";
 import "./landing.css";
 import "./news.css";

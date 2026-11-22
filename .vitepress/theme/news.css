@@ -1,13 +1,14 @@
 /* The news, in the black of the landing pages and dark only like them.
 
-   The index (theme/NewsIndex.vue) is one column a little wider than a post. The newest post leads:
-   the date line of a post's header, its headline in Newsreader at its display size, its summary in
-   Inter, and its lead code in the charcoal panel of a post's code. The older posts follow as rows
-   between hairlines, each its date, version, and headline on one line.
+   Both are set in the site's own type, Inter and Commit Mono.
 
-   A post (theme/NewsPost.vue around the post's Markdown) is plain: Inter throughout, one column at
-   reading width, its title, date, and summary above the text and links to the older and newer post
-   below it. */
+   The index (theme/NewsIndex.vue) is one column a little wider than a post. The newest post leads,
+   set like the header of the post it opens: its date line, its headline, and its summary, then its
+   lead code in the charcoal panel of a post's code. The older posts follow as rows between
+   hairlines, each its date, version, and headline on one line.
+
+   A post (theme/NewsPost.vue around the post's Markdown) is plain: one column at reading width, its
+   title, date, and summary above the text and links to the older and newer post below it. */
 
 :root:has(.news),
 :root:has(.news-post-header) {
@@ -18,7 +19,6 @@
   --news-ink-3: #6e6e73;
   --news-line: rgba(255, 255, 255, 0.1);
   --news-panel: #141416;
-  --news-serif: "Newsreader Variable", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
 }
 
 /* The index */
@@ -32,12 +32,10 @@
 
 .news-head h1 {
   margin: 0;
-  font-family: var(--news-serif);
-  font-variation-settings: "opsz" 72;
-  font-size: 72px;
-  font-weight: 400;
+  font-size: 64px;
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.045em;
 }
 
 .news-head p {
@@ -85,9 +83,6 @@
 
 .news-title,
 .news-row-title {
-  font-family: var(--news-serif);
-  font-variation-settings: "opsz" 72;
-  letter-spacing: -0.02em;
   text-wrap: balance;
   text-decoration-line: underline;
   text-decoration-color: transparent;
@@ -96,12 +91,14 @@
   transition: text-decoration-color 0.2s;
 }
 
+/* The headline of a post's header, at its size. */
 .news-title {
   display: block;
   margin-top: 14px;
-  font-size: 52px;
-  font-weight: 500;
-  line-height: 1.04;
+  font-size: 48px;
+  font-weight: 650;
+  line-height: 1.06;
+  letter-spacing: -0.035em;
 }
 
 .news-summary {
@@ -208,9 +205,10 @@
 }
 
 .news-row-title {
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.2;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
 }
 
 @media (max-width: 639px) {
@@ -219,7 +217,7 @@
   }
 
   .news-head h1 {
-    font-size: 52px;
+    font-size: 48px;
   }
 
   .news-head p {
@@ -255,7 +253,7 @@
 
   .news-row-title {
     grid-column: 1 / -1;
-    font-size: 21px;
+    font-size: 18px;
   }
 }
 
