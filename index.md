@@ -152,10 +152,10 @@ Every program is checked before it runs. An error points at the exact characters
 
 ```term
 $ ant check greet.ant
-greet.ant:4:17: User has no field nam [no-member]
+greet.ant:2:13: nmae is not defined [undefined]
    │
- 4 │   "Hello, ${user.nam}"
-   │             ^^^^^^^^
+ 2 │   "Hello, ${nmae}"
+   │             ^^^^
    = help: did you mean name?
 
 1 error

@@ -12,7 +12,7 @@
       "beginCaptures": { "1": { "name": "punctuation.definition.prompt.term" } },
       "end": "(?=^\\$ )",
       "patterns": [
-        { "match": "^\\S+:\\d+:\\d+: .*$", "name": "markup.bold.term" },
+        { "match": "^\\S+:(?:\\d+:\\d+:)? .*$", "name": "markup.bold.term" },
         {
           "match": "^(\\s*)(│)(\\s*)(\\^+)\\s*$",
           "captures": {
