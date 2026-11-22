@@ -170,8 +170,8 @@ export default defineConfig({
           { text: "Ant Editor", link: "https://editor.ant-lang.org" },
         ],
       },
-      { text: "News", link: "/news/", activeMatch: "^/news" },
       { text: "Playground", link: "/playground" },
+      { text: "News", link: "/news/", activeMatch: "^/news" },
     ],
     sidebar: docs.sidebar,
     editLink: {
