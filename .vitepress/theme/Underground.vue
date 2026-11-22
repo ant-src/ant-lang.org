@@ -139,7 +139,6 @@ function resizeCanvas() {
   const h = Math.round(bandHeight * dpr);
   if (canvas.width !== w) canvas.width = w;
   if (canvas.height !== h) canvas.height = h;
-  canvas.style.width = `${width}px`;
   canvas.style.height = `${bandHeight}px`;
 }
 
@@ -300,6 +299,9 @@ onBeforeUnmount(() => {
   z-index: -1;
   top: 0;
   left: 0;
+  /* Set here and not from the script: clientWidth is a whole number, and where the window is a
+     fraction of a pixel narrower, as on Windows at 150%, a canvas that wide scrolls the page. */
+  width: 100%;
   pointer-events: none;
 }
 
