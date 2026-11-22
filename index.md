@@ -146,7 +146,7 @@ One binary checks, formats, tests, and documents Ant, and teaches your editor al
 
 ### Type checker
 
-Find the bug before it finds you. `ant check` points at the exact characters and suggests a fix.
+A sound type checker: if `ant check` passes, the types hold when it runs. When it fails, it points at the exact characters and suggests a fix.
 
 <div class="shot">
 
