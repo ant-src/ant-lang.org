@@ -128,25 +128,28 @@ println(<p>{link(post)}</p>)
 
 ## A value can be one type or another.
 
-A union lists the types a value can have. `is` tells which one it holds.
+A union lists the types a value can have. `is` tells which one it holds, and inside the branch its fields are there to use.
 
 </div>
 <div class="shot">
 
 ```ant
-type Id = int | string
+type Card = { last4: string }
+type Cash = { change: int }
+type Payment = Card | Cash
 
-func describe(id: Id): string {
-  if id is int { "number ${id}" } else { "name ${id}" }
+func receipt(p: Payment): string {
+  if p is Card { "card ending ${p.last4}" }
+  else { "cash, ${p.change} back" }
 }
 
-println(describe(42))
-println(describe("ada"))
+println(receipt(Card{ last4: "4242" }))
+println(receipt(Cash{ change: 5 }))
 ```
 
 ```txt
-number 42
-name ada
+card ending 4242
+cash, 5 back
 ```
 
 </div>
