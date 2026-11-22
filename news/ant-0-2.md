@@ -20,7 +20,7 @@ Time.sleep(Time.duration(milliseconds: 500))
 Now a duration is a number with its unit, and units combine, as in Go. A literal has the type
 `Time.Duration` and the same value as the call it replaces:
 
-```ant
+```ant lead
 Time.sleep(500ms)
 
 let timeout = 1h30m

@@ -10,10 +10,12 @@
 //   ---
 //
 // The index (theme/NewsIndex.vue), the header and the older and newer links of a post
-// (theme/NewsPost.vue) and the feed (feed.xml, written by config.mts) all read the posts here.
+// (theme/NewsPost.vue), the feed (feed.xml), and the image of each post (og.ts), the last two
+// written by config.mts, all read the posts here.
 //
-// The index opens with the newest post and the code that sums it up: the post's first code block,
-// or the one whose fence is marked lead, as in ```ant lead. The mark does nothing in the post.
+// The index opens with the newest post and the code that sums it up, and each post's image shows
+// the same code: the post's first code block, or the one whose fence is marked lead, as in
+// ```ant lead. The mark does nothing in the post.
 import type { ContentData } from "vitepress";
 
 export const newsGlob = "news/*.md";
@@ -65,29 +67,44 @@ export function formatDate(date: string, style: "long" | "short"): string {
   });
 }
 
-// The info strings of the fenced code blocks in a post's Markdown, in order.
-function fenceInfos(src: string): string[] {
-  const infos: string[] = [];
-  let open: string | undefined;
+// The fenced code blocks in a post's Markdown, in order: each its info string and its code.
+function fences(src: string): { info: string; code: string }[] {
+  const blocks: { info: string; code: string }[] = [];
+  let open: { fence: string; info: string; lines: string[] } | undefined;
   for (const line of src.split("\n")) {
     const fence = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
-    if (!fence) continue;
-    if (open === undefined) {
-      open = fence[1];
-      infos.push(fence[2].trim());
-    } else if (fence[1][0] === open[0] && fence[1].length >= open.length && !fence[2].trim()) {
+    if (!open) {
+      if (fence) open = { fence: fence[1], info: fence[2].trim(), lines: [] };
+    } else if (fence && fence[1][0] === open.fence[0] && fence[1].length >= open.fence.length && !fence[2].trim()) {
+      blocks.push({ info: open.info, code: open.lines.join("\n") });
       open = undefined;
+    } else {
+      open.lines.push(line);
     }
   }
-  return infos;
+  return blocks;
 }
 
-// A post's lead code: of its rendered blocks, the one marked lead or else the first, as its
-// highlighted <pre> alone, without the copy button and language label around it in the post.
+// Which of a post's code blocks is its lead: the one marked lead, or else the first.
+function leadIndex(src: string): number {
+  return Math.max(
+    fences(src).findIndex(({ info }) => /(^|\s)lead(\s|$)/.test(info)),
+    0,
+  );
+}
+
+// A post's lead code: of its rendered blocks, the lead, as its highlighted <pre> alone, without the
+// copy button and language label around it in the post.
 export function leadCode(src: string, html: string): string | undefined {
-  const marked = fenceInfos(src).findIndex((info) => /(^|\s)lead(\s|$)/.test(info));
-  const pre = html.match(/<pre[\s\S]*?<\/pre>/g)?.[Math.max(marked, 0)];
+  const pre = html.match(/<pre[\s\S]*?<\/pre>/g)?.[leadIndex(src)];
   return pre?.replace(/ v-pre=""/g, "");
+}
+
+// A post's lead code as source, its language and its code, for its image (og.ts).
+export function leadSource(src: string): { lang: string; code: string } | undefined {
+  const block = fences(src)[leadIndex(src)];
+  if (!block) return undefined;
+  return { lang: block.info.split(/[\s{:]/)[0] || "txt", code: block.code };
 }
 
 const escape = (text: string) =>

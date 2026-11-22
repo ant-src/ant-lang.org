@@ -11,6 +11,7 @@ import termGrammar from "./term.tmLanguage.json" with { type: "json" };
 import { antDark, antLight } from "./ant-theme";
 import { syncDocs } from "./docs";
 import { atomFeed, newsGlob, toPosts } from "./news";
+import { ogImagePath, ogSize, writeNewsImages } from "./og";
 
 // The documentation comes from docs/ of ant-src/ant, checked out beside this repository or named by
 // ANT_DOCS, and is copied into docs/ here on every build.
@@ -82,10 +83,6 @@ export default defineConfig({
     ["meta", { name: "theme-color", content: "#7c3aed" }],
     ["meta", { property: "og:site_name", content: "Ant" }],
     ["meta", { property: "og:type", content: "website" }],
-    ["meta", { property: "og:image", content: "https://ant-lang.org/og.png" }],
-    ["meta", { property: "og:image:width", content: "1200" }],
-    ["meta", { property: "og:image:height", content: "630" }],
-    ["meta", { property: "og:image:alt", content: "The Ant logo, a colorful ant, beside the word Ant" }],
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
     ["link", { rel: "alternate", type: "application/atom+xml", title: "Ant News", href: "/feed.xml" }],
   ],
@@ -93,8 +90,9 @@ export default defineConfig({
   transformPageData(pageData) {
     // A news post is a plain column of text, dark like the news index, with its title, date, and
     // summary from its frontmatter set above the text and its older and newer links below it
-    // (theme/NewsPost.vue). Its summary is the page's description.
-    if (/^news\/(?!index\.md$)[^/]+\.md$/.test(pageData.relativePath)) {
+    // (theme/NewsPost.vue). Its summary is the page's description, and its image is its own (og.ts).
+    const post = /^news\/(?!index\.md$)[^/]+\.md$/.test(pageData.relativePath);
+    if (post) {
       Object.assign(pageData.frontmatter, {
         sidebar: false,
         aside: false,
@@ -114,6 +112,22 @@ export default defineConfig({
       ["meta", { property: "og:url", content: href }],
       ["meta", { property: "og:title", content: pageData.title || "Ant" }],
       ["meta", { property: "og:description", content: pageData.description || description }],
+      [
+        "meta",
+        {
+          property: "og:image",
+          content: `https://ant-lang.org${post ? ogImagePath("/" + pageData.relativePath.replace(/\.md$/, "")) : "/og.png"}`,
+        },
+      ],
+      ["meta", { property: "og:image:width", content: String(ogSize.width) }],
+      ["meta", { property: "og:image:height", content: String(ogSize.height) }],
+      [
+        "meta",
+        {
+          property: "og:image:alt",
+          content: post ? `${pageData.title}, on the Ant news` : "The Ant logo, a colorful ant, beside the word Ant",
+        },
+      ],
     );
   },
   // A darkOnly page is dark from its first paint, whatever the reader chose for the rest of the
@@ -166,10 +180,18 @@ export default defineConfig({
     },
     socialLinks: [{ icon: "github", link: "https://github.com/ant-src/ant" }],
   },
-  // The news feed, beside the pages. It names posts by their address on the live site.
+  // The news feed and the images of the posts, beside the pages. The feed names posts by their
+  // address on the live site.
   async buildEnd({ outDir }) {
-    const posts = toPosts(await createContentLoader(newsGlob, { render: true }).load());
+    const pages = await createContentLoader(newsGlob, { render: true, includeSrc: true }).load();
+    const posts = toPosts(pages);
     fs.writeFileSync(path.join(outDir, "feed.xml"), atomFeed(posts, "https://ant-lang.org"));
+    const src = new Map(pages.map((page) => [page.url, page.src ?? ""]));
+    await writeNewsImages(
+      posts.map((post) => ({ post, src: src.get(post.url) ?? "" })),
+      outDir,
+      { theme: antDark, langs: [...css, ...javascript, ant, term] },
+    );
   },
   vite: {
     // The year in the footer's copyright (theme/SiteFooter.vue).
