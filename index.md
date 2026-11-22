@@ -126,30 +126,27 @@ println(<p>{link(post)}</p>)
 <section class="feature">
 <div class="text">
 
-## Unions are checked to the last case.
+## A value can be one type or another.
 
-`is` tells the members of a union apart and narrows the value in each branch. These tests cover all of `Shape`, so no `else` is needed. Add a member to `Shape`, and `area` stops checking until it handles it.
+A union lists the types a value can have. `is` tells which one it holds.
 
 </div>
 <div class="shot">
 
 ```ant
-type Circle = { radius: float64 }
-type Rect = { width: float64, height: float64 }
-type Shape = Circle | Rect
+type Id = int | string
 
-func area(s: Shape): float64 {
-  if s is Circle { 3.14 * s.radius * s.radius }
-  else if s is Rect { s.width * s.height }
+func describe(id: Id): string {
+  if id is int { "number ${id}" } else { "name ${id}" }
 }
 
-println(area(Circle{ radius: 1.0 }))
-println(area(Rect{ width: 2.0, height: 3.0 }))
+println(describe(42))
+println(describe("ada"))
 ```
 
 ```txt
-3.14
-6.0
+number 42
+name ada
 ```
 
 </div>
