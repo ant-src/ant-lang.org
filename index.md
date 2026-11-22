@@ -165,24 +165,25 @@ greet.ant:2:13: nmae is not defined [undefined]
 </div>
 </div>
 
-<div class="solo right" style="--width: 840px">
+<div class="solo right" style="--width: 880px">
 <div class="chamber">
 
 <p class="tool">ant check</p>
 
 ### Warnings
 
-Code that runs but looks like a slip gets a warning with a name, and `ant check -explain` tells you why it matters.
+Some mistakes are perfectly valid code. The checker catches those too, says what goes wrong, and offers the fix.
 
 <div class="shot">
 
 ```term
-$ ant check total.ant
-total.ant:2:7: warning: tax is declared with let but never used [unused-variable]
+$ ant check save.ant
+save.ant:2:1: warning: the Result of File.write is discarded, so its Err is lost [unused-result]
    │
- 2 │   let tax = 20
-   │       ^^^
-   = help: remove it, or bind _ to keep what its initializer does
+ 2 │ File.write("report.txt", report)
+   │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = help: propagate it with try, or discard it on purpose with _ = ...
+   = fix: _ = ...
 
 1 warning
 ```
