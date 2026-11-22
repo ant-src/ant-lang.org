@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from "vue";
+import { colors, crumbEvent, drawAnt, Trail, type Point } from "./ants";
 
 // The ants of the home page. A dotted trail winds from under the headline, beside every row,
 // down to an anthill at the bottom of the page. Ants leave the hill, walk up to a row, pick up a
 // crumb in that row's color, and carry it home, where it stays on the hill as a colored grain.
-// The hill is kept in this browser, so it grows from visit to visit. Everything is drawn on one
+// The hill is kept in this browser, so it grows from visit to visit, and it stands on the ground of
+// the next section, whose ants (Underground.vue) bring their crumbs to it too. Everything is drawn on one
 // canvas behind the rows. The rows are two columns from 960px up, and the trail walks the gap
 // between them; narrower screens have no gap to walk, so they get no ants and no hill.
 //
@@ -13,7 +15,6 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 // band a little taller than the window. Every frame centers the band on the window and draws in
 // page coordinates, so between frames the band scrolls with the rows.
 
-const colors = ["#2563eb", "#7c3aed", "#f43f5e", "#f59e0b"];
 // The hill in localStorage: { crumbs }, the latest crumbs carried home, which are the ones drawn.
 // Every tab adds its own deliveries to what is stored.
 const storageKey = "ant-lang.org/hill";
@@ -25,7 +26,6 @@ const overscan = 0.25;
 const hillEl = ref<HTMLElement>();
 const canvasEl = ref<HTMLCanvasElement>();
 
-type Point = [number, number, number]; // x, y, and the trail's heading there
 type Stop = { d: number; color: string | null };
 type Crumb = [string, number, number]; // color, spread around the entrance, depth under the surface
 type Ant = {
@@ -44,8 +44,7 @@ let ctx: CanvasRenderingContext2D | null = null;
 let dpr = 1;
 let bandTop = 0;
 let bandHeight = 0;
-let pts: [number, number][] = [];
-let lens: number[] = [];
+let trail = new Trail([], 0);
 let total = 0;
 let dots: Point[] = [];
 let stops: Stop[] = [];
@@ -107,6 +106,12 @@ function save() {
   }
 }
 
+// A crumb carried up out of the tunnel under the hill.
+const onCrumb = (e: Event) => {
+  const color = (e as CustomEvent<unknown>).detail;
+  if (typeof color === "string" && colors.includes(color)) deliver(color);
+};
+
 // Another tab saved its crumbs.
 const onStorage = (e: StorageEvent) => {
   if (e.key !== storageKey) return;
@@ -129,7 +134,8 @@ function layout() {
   const room = rel(hillEl.value);
   const w = 230;
   const h = 128;
-  const base = room.b - 34;
+  // The hill stands on the bottom of its room, where the ground of the next section begins.
+  const base = room.b;
   hill = { cx: width / 2, base, w, h, ex: width / 2, ey: base - h + 12 };
 
   const way: [number, number][] = [];
@@ -153,55 +159,17 @@ function layout() {
   way.push([hill.ex + 40, hill.ey - 60]);
   way.push([hill.ex, hill.ey]);
 
-  // A Catmull-Rom curve through the waypoints, sampled densely.
-  const n = 120;
-  pts = [];
-  for (let i = 0; i < way.length - 1; i++) {
-    const p0 = way[Math.max(0, i - 1)];
-    const p1 = way[i];
-    const p2 = way[i + 1];
-    const p3 = way[Math.min(way.length - 1, i + 2)];
-    for (let j = 0; j < n; j++) {
-      const t = j / n;
-      const t2 = t * t;
-      const t3 = t2 * t;
-      const f = (a: number, b: number, c: number, d: number) =>
-        0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3);
-      // The curve swings wide at the corners; keep it on the page.
-      pts.push([Math.max(12, Math.min(width - 12, f(p0[0], p1[0], p2[0], p3[0]))), f(p0[1], p1[1], p2[1], p3[1])]);
-    }
-  }
-  pts.push(way[way.length - 1]);
-  lens = [0];
-  total = 0;
-  for (let i = 1; i < pts.length; i++) {
-    total += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
-    lens.push(total);
-  }
+  trail = new Trail(way, width);
+  total = trail.total;
   // The top of the trail is a stop too: some ants just look around and come back empty.
-  stops = [{ d: 0, color: null }, ...stopAt.map(([wi, color]) => ({ d: lens[wi * n], color }))];
+  stops = [{ d: 0, color: null }, ...stopAt.map(([wi, color]) => ({ d: trail.to(wi), color }))];
   dots = [];
-  for (let d = 0; d < total - 24; d += 7) dots.push(at(d));
+  for (let d = 0; d < total - 24; d += 7) dots.push(trail.at(d));
   for (const ant of ants) {
     ant.d = Math.min(ant.d, total);
     ant.target = Math.min(ant.target, stops.length - 1);
   }
   buildHill();
-}
-
-function at(d: number): Point {
-  let lo = 0;
-  let hi = lens.length - 1;
-  while (lo < hi) {
-    const mid = (lo + hi) >> 1;
-    if (lens[mid] < d) lo = mid + 1;
-    else hi = mid;
-  }
-  const i = Math.max(1, lo);
-  const a = pts[i - 1];
-  const b = pts[i];
-  const k = Math.max(0, Math.min(1, (d - lens[i - 1]) / (lens[i] - lens[i - 1] || 1)));
-  return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, Math.atan2(b[1] - a[1], b[0] - a[0])];
 }
 
 // The hill: grey grains lit from the upper left, drawn once on a canvas of its own.
@@ -292,50 +260,6 @@ function makeAnts() {
   }
 }
 
-function drawAnt(
-  c: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  heading: number,
-  t: number,
-  crumb: string | null,
-  alpha: number,
-) {
-  c.save();
-  c.globalAlpha = alpha;
-  c.translate(x, y);
-  c.rotate(heading);
-  c.fillStyle = "#d6d6dc";
-  c.strokeStyle = "#8a8a92";
-  c.lineWidth = 0.7;
-  const step = Math.sin(t) * 1.4;
-  c.beginPath();
-  for (const sx of [-2, 0, 2]) {
-    const s = sx === 0 ? -step : step;
-    c.moveTo(sx, 0);
-    c.lineTo(sx + s, -3.6);
-    c.moveTo(sx, 0);
-    c.lineTo(sx - s, 3.6);
-  }
-  c.moveTo(3.6, -0.6);
-  c.lineTo(5.8, -2.4 + step * 0.3);
-  c.moveTo(3.6, 0.6);
-  c.lineTo(5.8, 2.4 - step * 0.3);
-  c.stroke();
-  c.beginPath();
-  c.ellipse(-3.6, 0, 2.4, 1.7, 0, 0, Math.PI * 2);
-  c.ellipse(0, 0, 1.5, 1.1, 0, 0, Math.PI * 2);
-  c.ellipse(2.6, 0, 1.4, 1.3, 0, 0, Math.PI * 2);
-  c.fill();
-  if (crumb) {
-    c.fillStyle = crumb;
-    c.beginPath();
-    c.arc(5.6, 0, 1.7, 0, Math.PI * 2);
-    c.fill();
-  }
-  c.restore();
-}
-
 // The band never reaches past the page, or the page would grow to hold it. Narrow screens hide
 // the canvas, so it keeps its pixels only while it is shown.
 function resizeCanvas() {
@@ -406,7 +330,7 @@ function tick(now: number) {
       if (!reduce) ant.wait -= dt;
       if (ant.d >= total) continue;
     }
-    const p = at(ant.d);
+    const p = trail.at(ant.d);
     const nx = -Math.sin(p[2]);
     const ny = Math.cos(p[2]);
     if (!reduce && !waiting) {
@@ -466,6 +390,7 @@ onMounted(() => {
   observer.observe(landing);
   window.addEventListener("resize", onResize);
   window.addEventListener("storage", onStorage);
+  window.addEventListener(crumbEvent, onCrumb);
   document.addEventListener("visibilitychange", onHide);
   if (reduce) window.addEventListener("scroll", schedule, { passive: true });
 });
@@ -478,6 +403,7 @@ onBeforeUnmount(() => {
   wide?.removeEventListener("change", onWide);
   window.removeEventListener("resize", onResize);
   window.removeEventListener("storage", onStorage);
+  window.removeEventListener(crumbEvent, onCrumb);
   document.removeEventListener("visibilitychange", onHide);
   window.removeEventListener("scroll", schedule);
 });

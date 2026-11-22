@@ -22,10 +22,11 @@
   color: var(--landing-ink);
 }
 
-/* The home page ends on the anthill, which brings its own room. Narrow screens have no hill. */
+/* The first part of the home page ends on the anthill, which brings its own room and stands on
+   the ground of the second part. Narrow screens have no hill. */
 @media (min-width: 960px) {
   .landing:has(> .hill) {
-    padding-bottom: 24px;
+    padding-bottom: 0;
   }
 }
 
@@ -313,4 +314,178 @@
 .landing .closing a.button:hover {
   color: var(--landing-on-button);
   text-decoration: none;
+}
+
+/* The second part of the home page, under the anthill (Underground.vue): warm soil, fine grain,
+   and the tools in chambers, each a rounded hollow with what the tool prints set in it. The
+   section holds a .landing of its own for the type and the shots. */
+
+.underground {
+  --soil-top: #1b140e;
+  --soil-deep: #0e0a07;
+  --soil-ink-2: #b9a893;
+  --chamber: #211912;
+  --chamber-well: #130e0a;
+  position: relative;
+  isolation: isolate;
+  padding: 112px 0 160px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .84 0 0 0 0 .66 .7 0 0 0 -.3'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E"),
+    linear-gradient(var(--soil-top), var(--soil-deep) 65%, #000);
+}
+
+.underground > .landing {
+  padding-bottom: 0;
+}
+
+.underground .opening {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.underground .opening h2 {
+  font-size: 52px;
+  line-height: 1.1;
+}
+
+.underground .opening p {
+  margin: 18px auto 0;
+  max-width: 46ch;
+  color: var(--soil-ink-2);
+}
+
+.underground .chambers {
+  display: flex;
+  flex-direction: column;
+  gap: 96px;
+  margin-top: 96px;
+}
+
+/* Two chambers side by side, the second a little deeper; or one alone, wide enough for what its
+   tool prints, set to the left, the right, or the middle. */
+.underground .pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 96px;
+  align-items: start;
+}
+
+.underground .pair > :nth-child(2) {
+  margin-top: 120px;
+}
+
+.underground .solo {
+  width: min(100%, var(--width, 840px));
+}
+
+.underground .solo.left {
+  margin-right: auto;
+}
+
+.underground .solo.right {
+  margin-left: auto;
+}
+
+.underground .solo.middle {
+  margin-inline: auto;
+}
+
+.underground .chamber {
+  min-width: 0;
+  padding: 26px;
+  background: var(--chamber);
+  border-radius: 34px 40px 30px 44px / 40px 32px 44px 34px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 228, 196, 0.05),
+    inset 0 -18px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 220, 180, 0.05);
+}
+
+.underground .chamber .tool {
+  margin: 0 0 8px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 13px;
+  color: var(--soil-ink-2);
+}
+
+.underground .chamber h3 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.underground .chamber p {
+  max-width: 52ch;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--soil-ink-2);
+}
+
+.underground .chamber .shot,
+.underground .chamber .editors {
+  margin-top: 20px;
+  background: var(--chamber-well);
+  border-radius: 16px 20px 14px 22px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.underground .chamber .shot pre {
+  padding: 18px 22px;
+  font-size: 13px;
+}
+
+/* The formatter's chamber: the file as written, dimmed, over the file as formatted. */
+.underground .chamber .before {
+  opacity: 0.6;
+}
+
+.underground .chamber .before + div[class*="language-"] {
+  border-top: 1px solid var(--landing-line);
+}
+
+@media (max-width: 959px) {
+  .underground {
+    padding: 88px 0 112px;
+  }
+
+  .underground .opening h2 {
+    font-size: 36px;
+  }
+
+  .underground .chambers {
+    gap: 40px;
+    margin-top: 64px;
+  }
+
+  .underground .pair {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .underground .pair > :nth-child(2) {
+    margin-top: 0;
+  }
+
+  .underground .solo {
+    width: 100%;
+  }
+}
+
+@media (max-width: 639px) {
+  .underground .opening h2 {
+    font-size: 30px;
+  }
+
+  .underground .chamber {
+    padding: 20px;
+  }
+
+  .underground .chamber .shot pre {
+    padding: 14px 16px;
+    font-size: 12px;
+  }
 }

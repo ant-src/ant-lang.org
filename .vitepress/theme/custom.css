@@ -31,3 +31,13 @@ html.dark-only .VPNavBarExtra .group:has(.appearance) {
 html.dark-only .VPNavBarExtra .group:has(.appearance) + .group {
   border-top: 0;
 }
+
+/* Bold in code, which only terminal sessions (```term) use: Shiki hands it over as a variable per
+   theme, and VitePress applies only the colors. */
+.dark .vp-code span {
+  font-weight: var(--shiki-dark-font-weight, inherit);
+}
+
+html:not(.dark) .vp-code span {
+  font-weight: var(--shiki-light-font-weight, inherit);
+}

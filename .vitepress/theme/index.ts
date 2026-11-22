@@ -4,6 +4,8 @@ import DefaultTheme from "vitepress/theme";
 import { h, watchEffect } from "vue";
 import "@fontsource/commit-mono/400.css";
 import "@fontsource/commit-mono/400-italic.css";
+// The bold of terminal sessions on the home page, fetched only where a page shows it.
+import "@fontsource/commit-mono/700.css";
 // Newsreader sets the headlines of the news index, with its optical sizes.
 import "@fontsource-variable/newsreader/opsz.css";
 import "@fontsource-variable/newsreader/opsz-italic.css";
@@ -16,6 +18,7 @@ import NewsIndex from "./NewsIndex.vue";
 import NewsPost from "./NewsPost.vue";
 import Preview from "./Preview.vue";
 import SiteFooter from "./SiteFooter.vue";
+import Underground from "./Underground.vue";
 
 export default {
   extends: DefaultTheme,
@@ -32,6 +35,7 @@ export default {
     app.component("EditorShots", EditorShots);
     app.component("NewsIndex", NewsIndex);
     app.component("Preview", Preview);
+    app.component("Underground", Underground);
   },
   setup() {
     // A page whose frontmatter sets darkOnly is always dark and hides the appearance switch, but

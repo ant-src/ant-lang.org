@@ -7,6 +7,7 @@ import css from "shiki/langs/css.mjs";
 import javascript from "shiki/langs/javascript.mjs";
 // A copy of syntaxes/ant.tmLanguage.json from ant-src/vscode-ant, the grammar every editor uses.
 import antGrammar from "./ant.tmLanguage.json" with { type: "json" };
+import termGrammar from "./term.tmLanguage.json" with { type: "json" };
 import { antDark, antLight } from "./ant-theme";
 import { syncDocs } from "./docs";
 import { atomFeed, newsGlob, toPosts } from "./news";
@@ -27,6 +28,15 @@ for (const page of ["start/install.md"]) {
 const ant: LanguageRegistration = {
   ...(antGrammar as unknown as LanguageRegistration),
   name: "ant",
+};
+
+// Terminal sessions (```term): a line that starts with $ is a command, and what follows is what it
+// prints, colored the way ant colors it on a terminal. The source lines of a diagnostic, the
+// declarations and examples of ant doc, and the input of the REPL highlight as Ant.
+const term: LanguageRegistration = {
+  ...(termGrammar as unknown as LanguageRegistration),
+  name: "term",
+  embeddedLangs: ["ant"],
 };
 
 // The playground compiles ant.wasm once and hands the module to its workers, so the default URL
@@ -56,7 +66,7 @@ export default defineConfig({
   appearance: "dark",
   lastUpdated: false,
   markdown: {
-    languages: [...css, ...javascript, ant],
+    languages: [...css, ...javascript, ant, term],
     theme: { light: antLight, dark: antDark },
     config(md) {
       // Inline examples may contain literal {{ and }}, as DAP logpoints do.

@@ -1,0 +1,69 @@
+{
+  "name": "term",
+  "scopeName": "source.term",
+  "patterns": [{ "include": "#check" }, { "include": "#doc" }, { "include": "#repl" }, { "include": "#prompt" }],
+  "repository": {
+    "prompt": {
+      "match": "^(\\$) (.*)$",
+      "captures": { "1": { "name": "punctuation.definition.prompt.term" } }
+    },
+    "check": {
+      "begin": "^(\\$) (ant check\\b.*)$",
+      "beginCaptures": { "1": { "name": "punctuation.definition.prompt.term" } },
+      "end": "(?=^\\$ )",
+      "patterns": [
+        { "match": "^\\S+:\\d+:\\d+: .*$", "name": "markup.bold.term" },
+        {
+          "match": "^(\\s*)(│)(\\s*)(\\^+)\\s*$",
+          "captures": {
+            "2": { "name": "punctuation.separator.gutter.term" },
+            "4": { "name": "markup.error.term" }
+          }
+        },
+        {
+          "match": "^(\\s*\\d*\\s)(│)(.*)$",
+          "captures": {
+            "1": { "name": "punctuation.separator.gutter.term" },
+            "2": { "name": "punctuation.separator.gutter.term" },
+            "3": { "patterns": [{ "include": "source.ant" }] }
+          }
+        },
+        {
+          "match": "^(\\s+=)(.*)$",
+          "captures": { "1": { "name": "punctuation.separator.gutter.term" } }
+        },
+        { "match": "^\\d+ errors?\\b.*$", "name": "markup.error.term" },
+        { "match": "^\\d+ warnings?$", "name": "markup.warning.term" }
+      ]
+    },
+    "doc": {
+      "begin": "^(\\$) (ant doc\\b.*)$",
+      "beginCaptures": { "1": { "name": "punctuation.definition.prompt.term" } },
+      "end": "(?=^\\$ )",
+      "patterns": [
+        {
+          "match": "^((?:func|type|let|var) .*)$",
+          "captures": { "1": { "patterns": [{ "include": "source.ant" }] } }
+        },
+        {
+          "match": "^ {8}(.*)$",
+          "captures": { "1": { "patterns": [{ "include": "source.ant" }] } }
+        }
+      ]
+    },
+    "repl": {
+      "begin": "^(\\$) (ant)$",
+      "beginCaptures": { "1": { "name": "punctuation.definition.prompt.term" } },
+      "end": "(?=^\\$ )",
+      "patterns": [
+        {
+          "match": "^(>) (.*)$",
+          "captures": {
+            "1": { "name": "punctuation.definition.prompt.term" },
+            "2": { "patterns": [{ "include": "source.ant" }] }
+          }
+        }
+      ]
+    }
+  }
+}

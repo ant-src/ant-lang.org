@@ -3,7 +3,10 @@ import type { ThemeRegistrationRaw } from "shiki";
 // The colors of the ant, as the playground's editor paints them (playground/themes.ts), so code
 // on the site looks the same as code in the editor. Each theme maps the grammar's scopes to the
 // editor's token colors.
-type Palette = Record<"fg" | "keyword" | "string" | "number" | "type" | "func" | "comment" | "muted" | "error", string>;
+type Palette = Record<
+  "fg" | "keyword" | "string" | "number" | "type" | "func" | "comment" | "muted" | "error" | "warning",
+  string
+>;
 
 const light: Palette = {
   fg: "#24292f",
@@ -15,6 +18,7 @@ const light: Palette = {
   comment: "#6e7781",
   muted: "#57606a",
   error: "#dc2626",
+  warning: "#a16207",
 };
 
 const dark: Palette = {
@@ -27,6 +31,7 @@ const dark: Palette = {
   comment: "#8b949e",
   muted: "#9ca3af",
   error: "#f87171",
+  warning: "#fbbf24",
 };
 
 function theme(name: string, type: "light" | "dark", p: Palette): ThemeRegistrationRaw {
@@ -59,6 +64,11 @@ function theme(name: string, type: "light" | "dark", p: Palette): ThemeRegistrat
       { scope: ["entity.name.function", "support.function"], settings: { foreground: p.func } },
       { scope: "variable", settings: { foreground: p.fg } },
       { scope: "invalid", settings: { foreground: p.error } },
+      // What ant prints on a terminal (the term language): the head of a diagnostic in bold, its
+      // carets and the count of errors in bold red, the count of warnings in bold yellow.
+      { scope: "markup.bold.term", settings: { fontStyle: "bold" } },
+      { scope: "markup.error.term", settings: { foreground: p.error, fontStyle: "bold" } },
+      { scope: "markup.warning.term", settings: { foreground: p.warning, fontStyle: "bold" } },
     ],
   };
 }
