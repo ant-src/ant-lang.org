@@ -146,7 +146,7 @@ One binary checks, formats, tests, and documents Ant, and teaches your editor al
 
 ### Type checker
 
-Every program is checked before it runs. An error points at the exact characters and suggests a fix.
+`ant check` finds type errors without running the program, on every path, even the ones a run never reaches. An error points at the exact characters and suggests a fix.
 
 <div class="shot">
 
