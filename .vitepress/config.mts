@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { createContentLoader, defineConfig } from "vitepress";
+import { createContentLoader, defineConfig, type HeadConfig } from "vitepress";
 import type { Plugin } from "vite";
 import type { LanguageRegistration } from "shiki";
 import css from "shiki/langs/css.mjs";
@@ -55,6 +55,9 @@ function oneAntWasm(): Plugin {
   };
 }
 
+// A news post, by its path under the site: news/ant-0-3.md, not the index beside the posts.
+const isNewsPost = (relativePath: string) => /^news\/(?!index\.md$)[^/]+\.md$/.test(relativePath);
+
 const description = "Ant is a typed language with errors as values, pipes for data, and goroutines.";
 
 export default defineConfig({
@@ -76,6 +79,14 @@ export default defineConfig({
         tokens[index].attrSet("v-pre", "");
         return inlineCode(tokens, index, options, env, self);
       };
+      // A news post's lead code, its fence marked lead (```ant lead), is marked data-lead for the
+      // index and the post's image to find (news.ts).
+      const fence = md.renderer.rules.fence!;
+      md.renderer.rules.fence = (tokens, index, options, env, self) => {
+        const html = fence(tokens, index, options, env, self);
+        if (!/(^|\s)lead(\s|$)/.test(tokens[index].info)) return html;
+        return html.replace(/^<div /, "<div data-lead ");
+      };
     },
   },
   head: [
@@ -90,9 +101,8 @@ export default defineConfig({
   transformPageData(pageData) {
     // A news post is a plain column of text, dark like the news index, with its title, date, and
     // summary from its frontmatter set above the text and its older and newer links below it
-    // (theme/NewsPost.vue). Its summary is the page's description, and its image is its own (og.ts).
-    const post = /^news\/(?!index\.md$)[^/]+\.md$/.test(pageData.relativePath);
-    if (post) {
+    // (theme/NewsPost.vue). Its summary is the page's description.
+    if (isNewsPost(pageData.relativePath)) {
       Object.assign(pageData.frontmatter, {
         sidebar: false,
         aside: false,
@@ -112,11 +122,26 @@ export default defineConfig({
       ["meta", { property: "og:url", content: href }],
       ["meta", { property: "og:title", content: pageData.title || "Ant" }],
       ["meta", { property: "og:description", content: pageData.description || description }],
+    );
+  },
+  transformHead({ pageData }) {
+    const head: HeadConfig[] = [];
+    // A darkOnly page is dark from its first paint, whatever the reader chose for the rest of the
+    // site. The page's head tags come after VitePress's own appearance script, so this one wins.
+    // The dev server renders pages in the browser only, where theme/index.ts sets the same classes
+    // before anything is drawn.
+    if (pageData.frontmatter.darkOnly === true) {
+      head.push(["script", {}, "document.documentElement.classList.add('dark', 'dark-only')"]);
+    }
+    // The image a shared link shows: a news post's own (og.ts), og.png for every other page. This
+    // runs for every page, the 404 page too, which transformPageData never sees.
+    const post = isNewsPost(pageData.relativePath);
+    head.push(
       [
         "meta",
         {
           property: "og:image",
-          content: `https://ant-lang.org${post ? ogImagePath("/" + pageData.relativePath.replace(/\.md$/, "")) : "/og.png"}`,
+          content: `https://ant-lang.org${post ? ogImagePath(pageData.relativePath) : "/og.png"}`,
         },
       ],
       ["meta", { property: "og:image:width", content: String(ogSize.width) }],
@@ -129,14 +154,7 @@ export default defineConfig({
         },
       ],
     );
-  },
-  // A darkOnly page is dark from its first paint, whatever the reader chose for the rest of the
-  // site. The page's head tags come after VitePress's own appearance script, so this one wins.
-  // The dev server renders pages in the browser only, where theme/index.ts sets the same classes
-  // before anything is drawn.
-  transformHead({ pageData }) {
-    if (pageData.frontmatter.darkOnly !== true) return;
-    return [["script", {}, "document.documentElement.classList.add('dark', 'dark-only')"]];
+    return head;
   },
   themeConfig: {
     logo: "/logo.png",
@@ -183,15 +201,9 @@ export default defineConfig({
   // The news feed and the images of the posts, beside the pages. The feed names posts by their
   // address on the live site.
   async buildEnd({ outDir }) {
-    const pages = await createContentLoader(newsGlob, { render: true, includeSrc: true }).load();
-    const posts = toPosts(pages);
+    const posts = toPosts(await createContentLoader(newsGlob, { render: true }).load());
     fs.writeFileSync(path.join(outDir, "feed.xml"), atomFeed(posts, "https://ant-lang.org"));
-    const src = new Map(pages.map((page) => [page.url, page.src ?? ""]));
-    await writeNewsImages(
-      posts.map((post) => ({ post, src: src.get(post.url) ?? "" })),
-      outDir,
-      { theme: antDark, langs: [...css, ...javascript, ant, term] },
-    );
+    await writeNewsImages(posts, outDir);
   },
   vite: {
     // The year in the footer's copyright (theme/SiteFooter.vue).

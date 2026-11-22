@@ -5,19 +5,22 @@
 // lines of its lead code (news.ts) in Commit Mono, in a panel that runs off the bottom edge.
 //
 // Satori lays the image out from a tree of boxes, as an SVG, and resvg draws the SVG as a PNG.
-// Satori reads fonts as WOFF, not WOFF2, so the fonts come from their @fontsource packages.
+// Satori reads fonts as WOFF, not WOFF2, so the fonts come from their @fontsource packages, which
+// cover Latin, accented Latin included, and general punctuation, but not arrows or other symbols.
+// The code is the lead's <pre> as the post renders it, in the colors of the site's dark theme.
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { Resvg } from "@resvg/resvg-js";
 import satori from "satori";
-import { createHighlighter, type HighlighterGeneric, type LanguageRegistration, type ThemeRegistration } from "shiki";
-import { formatDate, leadSource, type Post } from "./news";
+import { antDark } from "./ant-theme";
+import { formatDate, leadCode, type Post } from "./news";
 
 export const ogSize = { width: 1200, height: 630 };
 
-// Where a post's image is served, as a path under the site: /news/ant-0-3 has /og/news/ant-0-3.png.
-export const ogImagePath = (url: string) => `/og${url}.png`;
+// Where the image of a post is served, from the post's path under the site, as a page names it
+// (news/ant-0-3.md) or as a post's url does (/news/ant-0-3): /og/news/ant-0-3.png.
+export const ogImagePath = (page: string) => `/og/${page.replace(/^\//, "").replace(/\.(md|html)$/, "")}.png`;
 
 // The image's margin, and the width of everything inside it.
 const margin = 72;
@@ -28,8 +31,9 @@ const ink2 = "#a1a1a6";
 const ink3 = "#6e6e73";
 const panel = "#141416";
 const line = "rgba(255, 255, 255, 0.1)";
+const codeInk = antDark.colors?.["editor.foreground"] ?? ink;
 
-// The lines of lead code an image shows, and how wide a line may run before it is cut.
+// The lines of lead code an image shows, and how many columns a line may fill before it is cut.
 const codeLines = 6;
 const codeColumns = 74;
 
@@ -48,6 +52,44 @@ function withoutLtag(woff: Buffer): Buffer {
   return font;
 }
 
+const entities: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'" };
+const decode = (html: string) =>
+  html.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (entity, name: string) =>
+    name[0] !== "#"
+      ? (entities[name] ?? entity)
+      : String.fromCodePoint(name[1] === "x" || name[1] === "X" ? parseInt(name.slice(2), 16) : Number(name.slice(1))),
+  );
+
+type Run = { text: string; color: string };
+
+// The first lines of a highlighted <pre>, each its runs of text in their dark-theme colors, cut
+// with an ellipsis where a line runs past codeColumns. Text without a color of its own is the
+// theme's foreground.
+function codeRows(pre: string): Run[][] {
+  const code = pre.slice(pre.indexOf("<code>") + "<code>".length, pre.lastIndexOf("</code>"));
+  return code
+    .split("\n")
+    .slice(0, codeLines)
+    .map((html) => {
+      const runs = [...html.matchAll(/<span(?: style="([^"]*)")?>([^<]*)<\/span>/g)].map(([, style, text]) => ({
+        text: decode(text).replace(/\t/g, "    "),
+        color: /--shiki-dark:(#[0-9a-f]+)/i.exec(style ?? "")?.[1] ?? codeInk,
+      }));
+      const columns = runs.reduce((sum, run) => sum + [...run.text].length, 0);
+      if (columns <= codeColumns) return runs;
+      const cut: Run[] = [];
+      let left = codeColumns - 1;
+      for (const run of runs) {
+        const chars = [...run.text];
+        cut.push({ text: chars.slice(0, left).join(""), color: run.color });
+        left -= chars.length;
+        if (left <= 0) break;
+      }
+      cut.push({ text: "…", color: ink3 });
+      return cut;
+    });
+}
+
 type Node = { type: string; props: { style?: Record<string, unknown>; children?: Child | Child[]; src?: string } };
 type Child = Node | string;
 
@@ -56,17 +98,20 @@ const box = (style: Record<string, unknown>, children?: Child | Child[]): Node =
   props: { style: { display: "flex", ...style }, children },
 });
 
-// Every post's image, from the post and its Markdown, its code highlighted in the theme and
-// languages the site highlights code in.
-export async function writeNewsImages(
-  posts: { post: Post; src: string }[],
-  outDir: string,
-  code: { theme: ThemeRegistration; langs: LanguageRegistration[] },
-): Promise<void> {
+// Inter's files of one weight: Latin and accented Latin.
+const inter = (weight: 400 | 600 | 700) =>
+  ["latin", "latin-ext"].map((subset) => ({
+    name: "Inter",
+    data: file(`@fontsource/inter/files/inter-${subset}-${weight}-normal.woff`),
+    weight,
+  }));
+
+// Every post's image, from the post and its rendered html.
+export async function writeNewsImages(posts: Post[], outDir: string): Promise<void> {
   const fonts = [
-    { name: "Inter", data: file("@fontsource/inter/files/inter-latin-400-normal.woff"), weight: 400 as const },
-    { name: "Inter", data: file("@fontsource/inter/files/inter-latin-600-normal.woff"), weight: 600 as const },
-    { name: "Inter", data: file("@fontsource/inter/files/inter-latin-700-normal.woff"), weight: 700 as const },
+    ...inter(400),
+    ...inter(600),
+    ...inter(700),
     {
       name: "Commit Mono",
       data: withoutLtag(file("@fontsource/commit-mono/files/commit-mono-latin-400-normal.woff")),
@@ -74,35 +119,10 @@ export async function writeNewsImages(
     },
   ];
   const logo = `data:image/png;base64,${fs.readFileSync(path.join(import.meta.dirname, "../public/logo.png")).toString("base64")}`;
-  // Typed by name, as the site's own languages are not among Shiki's bundled ones.
-  const highlighter = (await createHighlighter({
-    themes: [code.theme],
-    langs: code.langs,
-  })) as unknown as HighlighterGeneric<string, string>;
-  const loaded = new Set(highlighter.getLoadedLanguages());
 
-  // The lead's first lines, each a row of colored tokens; a language the site does not highlight
-  // is drawn plain.
-  const leadRows = (src: string): Node[] => {
-    const lead = leadSource(src);
-    if (!lead) return [];
-    const lang = loaded.has(lead.lang) ? lead.lang : "text";
-    const { tokens } = highlighter.codeToTokens(lead.code, { lang, theme: code.theme.name! });
-    return tokens.slice(0, codeLines).map((row) => {
-      let left = codeColumns;
-      const spans: Node[] = [];
-      for (const token of row) {
-        if (left <= 0) break;
-        const text = token.content.length > left ? `${token.content.slice(0, left - 1)}…` : token.content;
-        left -= token.content.length;
-        spans.push({ type: "span", props: { style: { color: token.color ?? ink }, children: text } });
-      }
-      return box({ height: 36, whiteSpace: "pre" }, spans.length ? spans : " ");
-    });
-  };
-
-  for (const { post, src } of posts) {
-    const rows = leadRows(src);
+  for (const post of posts) {
+    const lead = post.html ? leadCode(post.html) : undefined;
+    const rows = lead ? codeRows(lead) : [];
     const meta = [post.version && `Ant ${post.version}`, formatDate(post.date, "long")].filter(Boolean).join(" · ");
     const tree = box(
       {
@@ -174,7 +194,17 @@ export async function writeNewsImages(
                   fontSize: 22,
                   overflow: "hidden",
                 },
-                rows,
+                rows.map((runs) =>
+                  box(
+                    { height: 36, whiteSpace: "pre" },
+                    runs.length
+                      ? runs.map((run): Node => ({
+                          type: "span",
+                          props: { style: { color: run.color }, children: run.text },
+                        }))
+                      : " ",
+                  ),
+                ),
               ),
             ]
           : []),

@@ -15,7 +15,7 @@
 //
 // The index opens with the newest post and the code that sums it up, and each post's image shows
 // the same code: the post's first code block, or the one whose fence is marked lead, as in
-// ```ant lead. The mark does nothing in the post.
+// ```ant lead. The mark does not change how the post looks.
 import type { ContentData } from "vitepress";
 
 export const newsGlob = "news/*.md";
@@ -67,44 +67,13 @@ export function formatDate(date: string, style: "long" | "short"): string {
   });
 }
 
-// The fenced code blocks in a post's Markdown, in order: each its info string and its code.
-function fences(src: string): { info: string; code: string }[] {
-  const blocks: { info: string; code: string }[] = [];
-  let open: { fence: string; info: string; lines: string[] } | undefined;
-  for (const line of src.split("\n")) {
-    const fence = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
-    if (!open) {
-      if (fence) open = { fence: fence[1], info: fence[2].trim(), lines: [] };
-    } else if (fence && fence[1][0] === open.fence[0] && fence[1].length >= open.fence.length && !fence[2].trim()) {
-      blocks.push({ info: open.info, code: open.lines.join("\n") });
-      open = undefined;
-    } else {
-      open.lines.push(line);
-    }
-  }
-  return blocks;
-}
-
-// Which of a post's code blocks is its lead: the one marked lead, or else the first.
-function leadIndex(src: string): number {
-  return Math.max(
-    fences(src).findIndex(({ info }) => /(^|\s)lead(\s|$)/.test(info)),
-    0,
-  );
-}
-
-// A post's lead code: of its rendered blocks, the lead, as its highlighted <pre> alone, without the
-// copy button and language label around it in the post.
-export function leadCode(src: string, html: string): string | undefined {
-  const pre = html.match(/<pre[\s\S]*?<\/pre>/g)?.[leadIndex(src)];
-  return pre?.replace(/ v-pre=""/g, "");
-}
-
-// A post's lead code as source, its language and its code, for its image (og.ts).
-export function leadSource(src: string): { lang: string; code: string } | undefined {
-  const block = fences(src)[leadIndex(src)];
-  if (!block) return undefined;
-  return { lang: block.info.split(/[\s{:]/)[0] || "txt", code: block.code };
+// A post's lead code: the highlighted <pre> of its block marked lead (config.mts marks it with
+// data-lead), or else of its first block, without the copy button and language label around it.
+export function leadCode(html: string): string | undefined {
+  const start = html.indexOf("<pre", Math.max(html.indexOf("<div data-lead"), 0));
+  const end = html.indexOf("</pre>", start);
+  if (start < 0 || end < 0) return undefined;
+  return html.slice(start, end + "</pre>".length).replace(/ v-pre=""/g, "");
 }
 
 const escape = (text: string) =>
