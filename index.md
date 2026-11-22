@@ -123,6 +123,38 @@ println(<p>{link(post)}</p>)
 </div>
 </section>
 
+<section class="feature">
+<div class="text">
+
+## Unions are checked to the last case.
+
+`is` tells the members of a union apart and narrows the value in each branch. These tests cover all of `Shape`, so no `else` is needed. Add a member to `Shape`, and `area` stops checking until it handles it.
+
+</div>
+<div class="shot">
+
+```ant
+type Circle = { radius: float64 }
+type Rect = { width: float64, height: float64 }
+type Shape = Circle | Rect
+
+func area(s: Shape): float64 {
+  if s is Circle { 3.14 * s.radius * s.radius }
+  else if s is Rect { s.width * s.height }
+}
+
+println(area(Circle{ radius: 1.0 }))
+println(area(Rect{ width: 2.0, height: 3.0 }))
+```
+
+```txt
+3.14
+6.0
+```
+
+</div>
+</section>
+
 <AntTrail />
 
 </div>
