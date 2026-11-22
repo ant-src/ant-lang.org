@@ -11,6 +11,9 @@
 //
 // The index (theme/NewsIndex.vue), the header and the older and newer links of a post
 // (theme/NewsPost.vue) and the feed (feed.xml, written by config.mts) all read the posts here.
+//
+// The index opens with the newest post and the code that sums it up: the post's first code block,
+// or the one whose fence is marked lead, as in ```ant lead. The mark does nothing in the post.
 import type { ContentData } from "vitepress";
 
 export const newsGlob = "news/*.md";
@@ -24,6 +27,8 @@ export type Post = {
   version?: string;
   // The rendered post, for the feed only.
   html?: string;
+  // The highlighted <pre> of the post's lead code, for the newest post on the index only.
+  lead?: string;
 };
 
 // The posts, newest first. A post without a title, a date, or a summary fails the build.
@@ -50,14 +55,39 @@ export function toPosts(pages: ContentData[]): Post[] {
     .sort((a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title));
 }
 
-// "November 21, 2026" or "Nov 21", read in UTC so the day never shifts with the reader's zone.
+// "November 21, 2026" or "Nov 21, 2026", read in UTC so the day never shifts with the reader's zone.
 export function formatDate(date: string, style: "long" | "short"): string {
   return new Date(`${date}T00:00:00Z`).toLocaleDateString("en-US", {
     timeZone: "UTC",
     month: style,
     day: "numeric",
-    year: style === "long" ? "numeric" : undefined,
+    year: "numeric",
   });
+}
+
+// The info strings of the fenced code blocks in a post's Markdown, in order.
+function fenceInfos(src: string): string[] {
+  const infos: string[] = [];
+  let open: string | undefined;
+  for (const line of src.split("\n")) {
+    const fence = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(line);
+    if (!fence) continue;
+    if (open === undefined) {
+      open = fence[1];
+      infos.push(fence[2].trim());
+    } else if (fence[1][0] === open[0] && fence[1].length >= open.length && !fence[2].trim()) {
+      open = undefined;
+    }
+  }
+  return infos;
+}
+
+// A post's lead code: of its rendered blocks, the one marked lead or else the first, as its
+// highlighted <pre> alone, without the copy button and language label around it in the post.
+export function leadCode(src: string, html: string): string | undefined {
+  const marked = fenceInfos(src).findIndex((info) => /(^|\s)lead(\s|$)/.test(info));
+  const pre = html.match(/<pre[\s\S]*?<\/pre>/g)?.[Math.max(marked, 0)];
+  return pre?.replace(/ v-pre=""/g, "");
 }
 
 const escape = (text: string) =>
