@@ -12,8 +12,8 @@
     "lint": "oxlint --deny-warnings"
   },
   "dependencies": {
-    "@ant-lang/monaco": "^0.8.0",
-    "@ant-lang/wasm": "^0.8.0",
+    "@ant-lang/monaco": "^0.10.0",
+    "@ant-lang/wasm": "^0.10.0",
     "@fontsource/commit-mono": "^5.3.0",
     "monaco-editor": "^0.57.0",
     "shiki": "^2.5.0",
