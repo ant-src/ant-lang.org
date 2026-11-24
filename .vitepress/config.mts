@@ -10,13 +10,15 @@ import antGrammar from "./ant.tmLanguage.json" with { type: "json" };
 import termGrammar from "./term.tmLanguage.json" with { type: "json" };
 import { antDark, antLight } from "./ant-theme";
 import { syncDocs } from "./docs";
+import { writeLlms } from "./llms";
 import { atomFeed, newsGlob, toPosts } from "./news";
 import { ogImagePath, ogSize, writeNewsImages } from "./og";
 
 // The documentation comes from docs/ of ant-src/ant, checked out beside this repository or named by
 // ANT_DOCS, and is copied into docs/ here on every build.
 const site = path.resolve(import.meta.dirname, "..");
-const docs = syncDocs(path.resolve(site, process.env.ANT_DOCS ?? "../ant/docs"), path.join(site, "docs"));
+const origin = "https://ant-lang.org";
+const docs = syncDocs(path.resolve(site, process.env.ANT_DOCS ?? "../ant/docs"), path.join(site, "docs"), origin);
 // VitePress checks the links of Markdown pages, not those of the nav or the theme's components: check
 // the docs pages these link to here, so a page moved in ant fails the build instead of a link.
 for (const page of ["start/install.md"]) {
@@ -66,7 +68,7 @@ export default defineConfig({
   cleanUrls: true,
   // The repository README is not a page of the site.
   srcExclude: ["README.md"],
-  sitemap: { hostname: "https://ant-lang.org" },
+  sitemap: { hostname: origin },
   appearance: "dark",
   lastUpdated: false,
   markdown: {
@@ -115,7 +117,7 @@ export default defineConfig({
       });
       pageData.description ||= pageData.frontmatter.summary ?? "";
     }
-    const href = `https://ant-lang.org/${pageData.relativePath}`.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
+    const href = `${origin}/${pageData.relativePath}`.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
     pageData.frontmatter.head ??= [];
     pageData.frontmatter.head.push(
       ["link", { rel: "canonical", href }],
@@ -123,6 +125,11 @@ export default defineConfig({
       ["meta", { property: "og:title", content: pageData.title || "Ant" }],
       ["meta", { property: "og:description", content: pageData.description || description }],
     );
+    // A docs page is served as Markdown too, for an agent to read in place of the HTML (llms.ts).
+    if (pageData.relativePath.startsWith("docs/")) {
+      const markdown = `${origin}/${pageData.relativePath}`;
+      pageData.frontmatter.head.push(["link", { rel: "alternate", type: "text/markdown", href: markdown }]);
+    }
   },
   transformHead({ pageData }) {
     const head: HeadConfig[] = [];
@@ -141,7 +148,7 @@ export default defineConfig({
         "meta",
         {
           property: "og:image",
-          content: `https://ant-lang.org${post ? ogImagePath(pageData.relativePath) : "/og.png"}`,
+          content: `${origin}${post ? ogImagePath(pageData.relativePath) : "/og.png"}`,
         },
       ],
       ["meta", { property: "og:image:width", content: String(ogSize.width) }],
@@ -198,12 +205,13 @@ export default defineConfig({
     },
     socialLinks: [{ icon: "github", link: "https://github.com/ant-src/ant" }],
   },
-  // The news feed and the images of the posts, beside the pages. The feed names posts by their
-  // address on the live site.
+  // The news feed and the images of the posts, beside the pages, and the site as an agent reads it:
+  // llms.txt and the docs as Markdown. All of them name pages by their address on the live site.
   async buildEnd({ outDir }) {
     const posts = toPosts(await createContentLoader(newsGlob, { render: true }).load());
-    fs.writeFileSync(path.join(outDir, "feed.xml"), atomFeed(posts, "https://ant-lang.org"));
+    fs.writeFileSync(path.join(outDir, "feed.xml"), atomFeed(posts, origin));
     await writeNewsImages(posts, outDir);
+    writeLlms(docs.pages, posts, outDir, origin);
   },
   vite: {
     // The year in the footer's copyright (theme/SiteFooter.vue).

@@ -11,7 +11,9 @@
 // - Until lib/index.md is written, a list of the namespaces stands in for it.
 //
 // It returns the navigation of the pages it copied: a sidebar for each area of the docs, and the
-// Docs menu that leads to them.
+// Docs menu that leads to them. It returns the pages too, as plain Markdown, for llms.ts to serve
+// beside the HTML: no code groups, and every link absolute, so a page reads the same wherever it
+// is fetched from and in whatever file it ends up.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -19,7 +21,13 @@ import type { DefaultTheme } from "vitepress";
 
 type Page = { file: string; title: string; markdown: string };
 
-export type DocsNav = { sidebar: DefaultTheme.SidebarMulti; menu: DefaultTheme.NavItemWithChildren };
+export type DocsPage = Page;
+
+export type Docs = {
+  sidebar: DefaultTheme.SidebarMulti;
+  menu: DefaultTheme.NavItemWithChildren;
+  pages: DocsPage[];
+};
 
 // Pages sort by file name, except those named here, which come first, in this order.
 const first = ["start/install.md", "start/first-program.md"];
@@ -65,7 +73,9 @@ const libGroups: [title: string, namespaces: string[]][] = [
   ["Tooling", ["Test", "Reflect"]],
 ];
 
-export function syncDocs(from: string, to: string): DocsNav {
+// syncDocs copies the docs in from to the directory to. origin is the site's address, such as
+// https://ant-lang.org, which the links of the returned pages start with.
+export function syncDocs(from: string, to: string, origin: string): Docs {
   if (!fs.existsSync(path.join(from, "README.md"))) {
     throw new Error(`docs: no Ant docs in ${from}; check out ant-src/ant beside this repository or set ANT_DOCS`);
   }
@@ -88,25 +98,32 @@ export function syncDocs(from: string, to: string): DocsNav {
     fs.mkdirSync(path.dirname(out), { recursive: true });
     fs.writeFileSync(out, render(page, pages));
   }
-  return nav(pages);
+  const plain = [...pages.values()].map((page) => ({ ...page, markdown: render(page, pages, origin) }));
+  return { ...nav(pages), pages: plain };
 }
 
-// render rewrites a page for the site, leaving the inside of code blocks as it is.
-function render(page: Page, pages: Map<string, Page>): string {
+// render rewrites a page for the site, leaving the inside of code blocks as it is. Given the site's
+// origin, it writes the page as plain Markdown instead: a link to a docs page names the page's
+// Markdown by its full address, and a named block keeps its name on its fence.
+function render(page: Page, pages: Map<string, Page>, origin?: string): string {
   const dir = path.posix.dirname(page.file);
-  // Non-search comments go and links change in prose only: a code span, such as
-  // `<!-- end generated -->`, is set aside first. The first comment or span takes the text it covers.
+  // Comments go, the site's search directives aside, and links change in prose only: a code span,
+  // such as `<!-- end generated -->`, is set aside first. The first comment or span takes the text
+  // it covers.
   const prose = (text: string) => {
     const spans: string[] = [];
     return text
       .replace(/<!--[\s\S]*?-->\n?|(?<!`)(`+)(?!`)(?:[^\n]|\n(?![ \t]*\n))*?(?<!`)\1(?!`)/g, (match, ticks) => {
         if (ticks) return `\0${spans.push(match) - 1}\0`;
-        return /^<!-- search: (true|false) -->\n?$/.test(match) ? match : "";
+        return origin === undefined && /^<!-- search: (true|false) -->\n?$/.test(match) ? match : "";
       })
       .replace(/(!?)\[((?:[^\][]|\[[^\]]*\])*)\]\(([^)\s]+)\)/g, (link, image, text, url) => {
-        if (image || /^[a-z]+:|^\/|^#/.test(url)) return link;
-        const target = path.posix.normalize(path.posix.join(dir, url.replace(/#.*/, "")));
-        return pages.has(target) ? link : text;
+        if (image || /^[a-z]+:|^#/.test(url)) return link;
+        if (url.startsWith("/")) return origin === undefined ? link : `[${text}](${origin}${url})`;
+        const [file, hash = ""] = url.split(/(?=#)/);
+        const target = path.posix.normalize(path.posix.join(dir, file));
+        if (!pages.has(target)) return text;
+        return origin === undefined ? link : `[${text}](${origin}/docs/${target}${hash})`;
       })
       .replace(/\n{3,}/g, "\n\n")
       .replace(/\0(\d+)\0/g, (_, i) => spans[Number(i)]);
@@ -122,7 +139,7 @@ function render(page: Page, pages: Map<string, Page>): string {
     const marker = /^ {0,3}(`{3,}|~{3,})/.exec(line)?.[1];
     if (!fence && marker) {
       // A code group of one shows the file name of a named block as its tab.
-      group = /^( {0,3})[`~]+\w+ \[[^\]]+\]\s*$/.exec(line)?.[1] ?? null;
+      group = origin === undefined ? (/^( {0,3})[`~]+\w+ \[[^\]]+\]\s*$/.exec(line)?.[1] ?? null) : null;
       out += prose(text) + (group === null ? "" : `${group}::: code-group\n\n`);
       out += line.replace(/^( {0,3}[`~]+ant) signature\b/, "$1");
       text = "";
@@ -142,7 +159,7 @@ function render(page: Page, pages: Map<string, Page>): string {
   return out.replace(/^\n+/, "");
 }
 
-function nav(pages: Map<string, Page>): DocsNav {
+function nav(pages: Map<string, Page>): Omit<Docs, "pages"> {
   const link = (file: string) => "/docs/" + file.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
   const item = (file: string, text = pages.get(file)!.title) => ({ text, link: link(file) });
   const under = (dir: string) => [...pages.keys()].filter((file) => file.startsWith(dir + "/"));
@@ -287,7 +304,7 @@ function title(dir: string, pages: Map<string, Page>): string {
   return pages.get(`${dir}/index.md`)?.title ?? name[0].toUpperCase() + name.slice(1).replace(/-/g, " ");
 }
 
-function byName(a: string, b: string): number {
+export function byName(a: string, b: string): number {
   const rank = (file: string) => (first.includes(file) ? first.indexOf(file) : first.length);
   return rank(a) - rank(b) || a.localeCompare(b, "en", { sensitivity: "base" });
 }

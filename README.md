@@ -30,6 +30,17 @@ To include any other page, add a comment near the top of its Markdown source, af
 Use `<!-- search: false -->` to exclude a page, even within those two directories. For documentation pages,
 edit the source in `ant/docs/`; the copied `docs/` directory is replaced on every build.
 
+Every build also writes the site as a coding agent reads it (`.vitepress/llms.ts`):
+
+- `/llms.txt`: what an agent that has never seen Ant must know before it writes any, then a list of pages
+  for each part of the docs. The first part is `.vitepress/llms.md`, written by hand; the lists are made from the docs.
+- `/docs/**/*.md`: every docs page as Markdown, at the page's address with `.md` added.
+- `/llms-small.txt`: the tour and Idiomatic Ant in one file.
+- `/llms-full.txt`: every docs page in one file.
+
+`llms.md` states facts about the language and the tools that no test runs. When either changes, check the file
+against `ant`.
+
 The playground's examples live in `playground/examples/`, one directory each, holding `main.ant`.
 Add one to the list in `playground/examples.ts`.
 
