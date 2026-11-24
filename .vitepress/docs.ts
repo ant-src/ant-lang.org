@@ -118,7 +118,9 @@ function render(page: Page, pages: Map<string, Page>, origin?: string): string {
         return origin === undefined && /^<!-- search: (true|false) -->\n?$/.test(match) ? match : "";
       })
       .replace(/(!?)\[((?:[^\][]|\[[^\]]*\])*)\]\(([^)\s]+)\)/g, (link, image, text, url) => {
-        if (image || /^[a-z]+:|^#/.test(url)) return link;
+        if (image || /^[a-z]+:/.test(url)) return link;
+        // A link to a heading of its own page names the page too, for a file that holds many pages.
+        if (url.startsWith("#")) return origin === undefined ? link : `[${text}](${origin}/docs/${page.file}${url})`;
         if (url.startsWith("/")) return origin === undefined ? link : `[${text}](${origin}${url})`;
         const [file, hash = ""] = url.split(/(?=#)/);
         const target = path.posix.normalize(path.posix.join(dir, file));

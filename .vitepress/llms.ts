@@ -22,12 +22,13 @@ import type { Post } from "./news";
 type Item = { title: string; url: string; note?: string };
 
 // The sections of the docs in the order llms-full.txt holds them: what teaches first, then what is
-// looked up.
+// looked up. A section not named here follows them.
 const order = ["start", "tour", "guide", "howto", "coming-from", "design", "tools", "language", "lib"];
 
 export function writeLlms(pages: DocsPage[], posts: Post[], outDir: string, origin: string): void {
   // A section's index page leads the section, and the index of the docs leads them all.
-  const section = (page: DocsPage) => (page.file.includes("/") ? order.indexOf(page.file.split("/")[0]) : -1);
+  const place = (dir: string) => (order.includes(dir) ? order.indexOf(dir) : order.length);
+  const section = (page: DocsPage) => (page.file.includes("/") ? place(page.file.split("/")[0]) : -1);
   const key = (page: DocsPage) => page.file.replace(/(^|\/)index\.md$/, "$1");
   const docs = [...pages].sort((a, b) => section(a) - section(b) || byName(key(a), key(b)));
 
@@ -115,8 +116,10 @@ export function writeLlms(pages: DocsPage[], posts: Post[], outDir: string, orig
 
   const small = bundle(
     "Ant in one file",
-    `The tour of Ant, one concept and one program on each of its pages, and the guide to idiomatic Ant. ` +
-      `Every program here runs, and prints the output shown under it. ` +
+    `The tour of Ant, one concept on each of its pages, and the guide to idiomatic Ant. ` +
+      `Every example is tested with Ant. A block of the tour with output under it is a whole program, ` +
+      `and a line marked \`// error:\` or \`// panic:\` fails with the message in the comment. ` +
+      `A block of the guide is part of a program. ` +
       `The index of the whole documentation is ${origin}/llms.txt.`,
     [...under("tour"), get("guide/idiomatic.md")],
     url,
@@ -132,8 +135,9 @@ export function writeLlms(pages: DocsPage[], posts: Post[], outDir: string, orig
 
   // What llms.md leaves a place for: the program that opens the docs, with its output, which is a
   // page of Ant as it is written, tested in ant with the rest of the docs, and the sizes of the
-  // two files, which an agent weighs before it fetches one.
-  const program = /^```ant\n[\s\S]*?^```\n+```text\n[\s\S]*?^```$/m.exec(get("index.md").markdown)?.[0];
+  // two files, which an agent weighs before it fetches one. The program is the first block that
+  // its output follows: no line between the fences of a block opens or closes another.
+  const program = /^```ant\n(?:(?!```).*\n)*```\n+```text\n(?:(?!```).*\n)*```$/m.exec(get("index.md").markdown)?.[0];
   if (!program) throw new Error("llms: docs/index.md no longer shows a program and its output");
   const all = new Set(docs.map(url));
   const index = [
@@ -164,17 +168,19 @@ function notes(places: Record<string, string>, exists: (link: string) => boolean
   for (const [, link] of source.matchAll(/\]\(([^)\s]+)\)/g)) {
     if (!exists(link)) throw new Error(`llms: llms.md links ${link}, which is not a page of the docs`);
   }
+  const known = Object.keys(places);
   return source.replace(/<!-- (.*?) -->/g, (place, name: string) => {
-    if (!(name in places)) throw new Error(`llms: llms.md has ${place}, and the places are ${Object.keys(places)}`);
+    if (!known.includes(name)) throw new Error(`llms: llms.md has ${place}, and the places are ${known}`);
     return places[name];
   });
 }
 
 // bundle joins pages into one file, a rule between them, each under its title with the address of
-// its own Markdown, so a reader of a part can cite it and fetch it alone.
+// its own Markdown, so a reader of a part can cite it and fetch it alone. The title is the line a
+// page starts with, and no later line that looks like one, such as a comment in a shell block.
 function bundle(title: string, summary: string, pages: DocsPage[], url: (page: DocsPage) => string): string {
   const parts = pages.map((page) =>
-    page.markdown.trimEnd().replace(/^# .*$/m, (heading) => `${heading}\n\nSource: ${url(page)}`),
+    page.markdown.trimEnd().replace(/^# .*/, (heading) => `${heading}\n\nSource: ${url(page)}`),
   );
   return [`# ${title}\n\n> ${summary}`, ...parts].join("\n\n---\n\n") + "\n";
 }
@@ -194,10 +200,11 @@ function opening(markdown: string): string | undefined {
 }
 
 // The size of a file as an agent weighs it: in bytes, and in tokens, at the three and a half bytes
-// to a token that these pages come to.
+// to a token that these pages come to. The unit follows the rounded number: 999,600 is 1.0 of the
+// larger unit, not 1000 of the smaller.
 function size(content: string): string {
   const bytes = Buffer.byteLength(content);
-  const round = (n: number) => (n < 1e6 ? `${Math.round(n / 1e3)}` : `${(n / 1e6).toFixed(1)}`);
-  const tokens = bytes / 3.5;
-  return `${round(bytes)} ${bytes < 1e6 ? "KB" : "MB"}, about ${round(tokens)}${tokens < 1e6 ? "k" : "M"} tokens`;
+  const round = (n: number, small: string, large: string) =>
+    n < 999_500 ? `${Math.round(n / 1e3)}${small}` : `${(n / 1e6).toFixed(1)}${large}`;
+  return `${round(bytes, " KB", " MB")}, about ${round(bytes / 3.5, "k", "M")} tokens`;
 }
