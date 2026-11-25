@@ -13,7 +13,7 @@ The `ant` binary answers faster than these pages:
 - `ant fmt .` rewrites every file into the one layout Ant code has. `ant fmt --check .` lists the files it would change, and changes nothing.
 - `ant code def`, `refs`, `type`, and `symbols` find declarations, uses, and types from the shell, and `ant code rename` renames a declaration in every file that uses it. Each takes `-json`.
 
-`ant version` prints `ant v` and a version number. If it prints an error about a build file or a target instead, the `ant` on the `PATH` is Apache Ant, the Java build tool. Install Ant with `curl -fsSL https://ant-lang.org/install.sh | sh`, with `irm https://ant-lang.org/install.ps1 | iex` in PowerShell, or with `go install github.com/ant-src/ant/cmd/ant@latest`.
+`ant version` prints `ant v` and a version number. If it prints an error about a build file or a target instead, the `ant` on the `PATH` is Apache Ant, the Java build tool. Install Ant with `curl -fsSL https://ant-lang.org/install.sh | sh`, with `irm https://ant-lang.org/install.ps1 | iex` in PowerShell, or with `go install ant-lang.org/cmd/ant@latest`.
 
 Where Ant is not what its looks suggest:
 

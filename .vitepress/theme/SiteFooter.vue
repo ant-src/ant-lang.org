@@ -41,7 +41,7 @@ const columns = computed((): Column[] => [
     // For running Ant inside a Go program or a web page.
     title: "Embed",
     links: [
-      { text: "Go package", link: "https://pkg.go.dev/github.com/ant-src/ant" },
+      { text: "Go package", link: "https://pkg.go.dev/ant-lang.org" },
       { text: "@ant-lang/wasm", link: "https://www.npmjs.com/package/@ant-lang/wasm" },
       { text: "@ant-lang/monaco", link: "https://www.npmjs.com/package/@ant-lang/monaco" },
     ],

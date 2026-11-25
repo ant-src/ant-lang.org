@@ -92,7 +92,7 @@ export function writeLlms(pages: DocsPage[], posts: Post[], outDir: string, orig
         },
         {
           title: "Go package",
-          url: "https://pkg.go.dev/github.com/ant-src/ant",
+          url: "https://pkg.go.dev/ant-lang.org",
           note: "The API a Go program embeds Ant with.",
         },
         { title: "Ant for VS Code", url: `${origin}/vscode` },
