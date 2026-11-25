@@ -98,6 +98,9 @@ export default defineConfig({
     ["meta", { property: "og:type", content: "website" }],
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
     ["link", { rel: "alternate", type: "application/atom+xml", title: "Ant News", href: "/feed.xml" }],
+    // The Go module ant-lang.org lives in ant-src/ant. go get asks for ant-lang.org/cmd/ant?go-get=1,
+    // which GitHub Pages answers with the 404 page; go reads the tag from it before the status.
+    ["meta", { name: "go-import", content: "ant-lang.org git https://github.com/ant-src/ant" }],
   ],
   // GitHub Pages serves every page at /foo and /foo.html; the canonical link names the clean URL.
   transformPageData(pageData) {
