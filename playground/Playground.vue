@@ -356,6 +356,9 @@ onMounted(async () => {
     bracketPairColorization: { enabled: false },
     wordWrap: matchMedia("(max-width: 768px)").matches ? "on" : "off",
     fixedOverflowWidgets: true,
+    // Type through a textarea: VitePress opens search on "/" unless the focused element is a
+    // text field, and Monaco's EditContext div is not one.
+    editContext: false,
     theme: isDark.value ? "ant-dark" : "ant-light",
   });
   // Commit Mono is a web font: once it has loaded, Monaco measures its glyphs again, so the cursor
